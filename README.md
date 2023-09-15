@@ -9,4 +9,4 @@ This **README.md** file highlights some important information about this course.
 
 - **Coding language:** R
 - **Grades:** 100% Assignments, no exams
-- **Assignment submission:** Every 2 weeks | 3 Groupwork and 2 individual work
+- **Assignment submission:** Every 2 weeks | 3 Group projects and 2 individual projects
