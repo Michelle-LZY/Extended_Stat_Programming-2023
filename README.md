@@ -1,4 +1,4 @@
-# Extended Statistical Programming-Group Projects
+# Extended Statistical Programming - Group Projects
 
 # Welcome!
 
