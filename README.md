@@ -6,5 +6,5 @@
 # Task-2: Zheyue Lin
 - [x] Create a vector b that hold the m most commonly occuring words. (m ≈ 1000) 
 
-# Task-3
+# Task-3: Xinran Zhu
 - [ ] Make the matrices of common word triplets(T) and pairs(P).
