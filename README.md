@@ -22,7 +22,11 @@
       The 'sample' function should be used to select a word(index) with a given probability.
 
 # Task 9: Bo Gao
-- [ ] For comparison, simulate 50 word sections of text where the word probabilities are simply 
+- [ ] For comparison, simulate 50 word sections of text where the word probabilities are simply
+
+# Task 10: Zheyue Lin
+- [ ] Keep words having capital letter the most often in the original text.
+**Note: Be careful not to mess up the frequencies**
 
 # Some questions to ask:
 1. About the working path
