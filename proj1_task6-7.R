@@ -1,3 +1,27 @@
+#task 1-5
+s<-("You, may. copy; it! give: it? away, or. re-use; it! under: the? terms,
+of. the; Project!")
+a<-strsplit(s," ",)[[1]]
+
+
+#setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
+#a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
+#a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
+
+split_punct<-function(signal){
+  location<-grep(signal,a,fixed = TRUE)
+  a_p<-rep("",length(a)+length(location))
+  insert_location<-location+1:length(location)
+  a_nosignal<-gsub(signal,"",a,fixed = TRUE)
+  a_p[insert_location]<-signal
+  a_p[-insert_location]<-a_nosignal
+  return(a_p)
+  
+}
+signal_list<-c(",",".",";","!",":","?")
+for (i in signal_list){
+  a<-split_punct(i)
+}
 # Task 6
 # This definition for a is only for testing
 a <- c("tum","COLD","tee","GREAT","HOT","tumpty","wibble","the","weather","is","hot","TUm","thE","puppy","looks","cute","TeE","wobble","WoBBle",'tHe',"apple","pie","is","great","the","weather","is","great","the","weather","is","cold","today")
