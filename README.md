@@ -2,7 +2,7 @@
 
 # Task 1-5: Bo Gao
 - [x] Read txt file into R
-- [x] Write a function 'split_punct', which takes a vector of words as input along with a punctuation mark (e.g. ",","，","." etc.)
+- [x] Write a function 'split_punct', which takes a vector of words as input along with a punctuation mark (e.g. ",",".","?" etc.)
       Search for each word containing the punctuation mark  
       Remove it from the word  
       And add the mark as a new entry in the vector of words after the word it came from  
