@@ -50,7 +50,43 @@ t <- cbind(col_1,col_2,col_3)[-which(is.na(rowSums(cbind(col_1,col_2,col_3)))),]
 p <- cbind(col_1,col_2)[-which(is.na(rowSums(cbind(col_1,col_2)))),]
 
 # Task 8
+word <- c(b[t[1,1]],b[t[1,2]])
 
+tun1 <- c()
+tun2 <- c()
+ty1 <- t[1,1]
+ty2 <- t[1,2]
+
+probability <- function(name,freq){
+  pb <- c()
+  for (i in 1:length(name)){
+    pb <- append(pb,freq[i]/sum(freq))
+  }
+}
+
+for (n in 1:48){
+  for (i in 1:nrow(t)) {
+    if (t[i,1] == ty1){
+      tun1 <- rbind(tun1,t[i,])
+    }
+  }
+  tun1
+  
+  for (i in 1:nrow(tun1)) {
+    if (tun1[i,2] == ty2){
+      tun2 <- rbind(tun2,tun1[i,])
+    }
+  }
+  tun2
+  
+  freq1 <- as.numeric(table(tun2[,3]))
+  name1 <- as.numeric(names(table(tun2[,3])))
+  ty3 <- sample(as.numeric(names(table(tun2[,3]))),size=1,replace = FALSE, prob = probability(name1,freq1))
+  word <- append(word,b[ty3])
+  ty1 <- ty2
+  ty2 <- ty3
+}
+word
 
 
 
