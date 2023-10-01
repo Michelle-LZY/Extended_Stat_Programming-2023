@@ -36,7 +36,7 @@ indices <- match(lowercase_vector,unique_vector)
 counts <- tabulate(indices)
 print(counts)
 # Choose the 1000th frequency as the threshold after sorted the frequencies decreasingly
-threshold <- sort(counts,decreasing = TRUE)[2]
+threshold <- sort(counts,decreasing = TRUE)[1000]
 # Create a vector b of the m most commonly occurring words (m ≈ 1000)
 b <- unique_vector[counts>=threshold]
 
@@ -45,10 +45,11 @@ b <- unique_vector[counts>=threshold]
 col_1 <- match(lowercase_vector,b)
 col_2 <- match(lowercase_vector[2:length(lowercase_vector)],b)
 col_3 <- match(lowercase_vector[3:length(lowercase_vector)],b)
-t <- cbind(col_1,col_2,col_3)[-which(is.na(rowSums(cbind(col_1,col_2,col_3)))),]
+t <- cbind(col_1,col_2,col_3)[1:length(col_3),]
+t <- t[-which(is.na(rowSums(t))),]
 # Use the same idea to create common words pairs matrix P
-p <- cbind(col_1,col_2)[-which(is.na(rowSums(cbind(col_1,col_2)))),]
-
+p <- cbind(col_1,col_2)[1:length(col_2),]
+p <- p[-which(is.na(rowSums(p))),]
 # Task 8
 word <- c(b[t[1,1]],b[t[1,2]])
 
