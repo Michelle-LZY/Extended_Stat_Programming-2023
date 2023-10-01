@@ -113,8 +113,43 @@ for (n in 1:48){
 word
 
 
+#######
+ty1 <- t[120,1]
+ty2 <- t[120,2]
+word <- c(b[ty1],b[ty2])
 
+probability <- function(name,freq){
+  pb <- c()
+  for (i in 1:length(name)){
+    pb <- append(pb,freq[i]/sum(freq))
+    return(pb)
+  }
+}
 
+for (n in 1:48){
+  tun <- c()
+  for (i in 1:nrow(t)) {
+    if (t[i,1] == ty1 & t[i,2] == ty2){
+      tun <- rbind(tun,t[i,3])
+    }
+  }
+  tun
+
+  freq <- as.numeric(table(tun))
+  name <- as.numeric(names(table(tun)))
+  
+  if(length(probability(name,freq))==1){
+    ty3<-as.numeric(tun[1])
+  }
+  else{
+    ty3 <- sample(name,size=1,replace = FALSE, prob = probability(name,freq))
+  }
+  
+  word <- append(word,b[ty3])
+  ty1 <- ty2
+  ty2 <- ty3
+}
+word
 
 
 
