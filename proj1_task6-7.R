@@ -1,30 +1,44 @@
-#task 1-5
-s<-("You, may. copy; it! give: it? away, or. re-use; it! under: the? terms,
-of. the; Project!")
-a<-strsplit(s," ",)[[1]]
+#s<-("You, may. copy; it! give: it? away, or. re-use; it! under: the? terms,
+#of. the; Project!")
+#a<-strsplit(s," ",)[[1]]
 
+#Task 1-3
+setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
+a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
+a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
 
-#setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
-#a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
-#a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
-
-split_punct<-function(signal){
-  location<-grep(signal,a,fixed = TRUE)
-  a_p<-rep("",length(a)+length(location))
-  insert_location<-location+1:length(location)
-  a_nosignal<-gsub(signal,"",a,fixed = TRUE)
-  a_p[insert_location]<-signal
-  a_p[-insert_location]<-a_nosignal
-  return(a_p)
+#Task 4
+#the function of split_punct for separate punctuation marks
+split_punct<-function(punctuation){
   
+  #get the location of punctuation in a
+  location<-grep(punctuation,a,fixed = TRUE)
+  #create new vector to store separated words
+  a_new<-rep("",length(a)+length(location))
+  #find the location of a that punctuation is inserted
+  insert_location<-location+1:length(location)
+  #get the vector of a without punctuation
+  a_nopunctuation<-gsub(punctuation,"",a,fixed = TRUE)
+  # insert punctuation in the returned vector
+  a_new[insert_location]<-punctuation
+  # insert words in the returned vector
+  a_new[-insert_location]<-a_nopunctuation
+  
+  return(a_new)
 }
-signal_list<-c(",",".",";","!",":","?")
-for (i in signal_list){
+
+#Task 5
+#create punctuation vector
+punctuation_list<-c(",",".",";","!",":","?")
+for (i in punctuation_list){
+  # use split_punct in a
   a<-split_punct(i)
 }
+
+
 # Task 6
 # This definition for a is only for testing
-a <- c("tum","COLD","tee","GREAT","HOT","tumpty","wibble","the","weather","is","hot","TUm","thE","puppy","looks","cute","TeE","wobble","WoBBle",'tHe',"apple","pie","is","great","the","weather","is","great","the","weather","is","cold","today")
+#a <- c("tum","COLD","tee","GREAT","HOT","tumpty","wibble","the","weather","is","hot","TUm","thE","puppy","looks","cute","TeE","wobble","WoBBle",'tHe',"apple","pie","is","great","the","weather","is","great","the","weather","is","cold","today")
 # Convert the vector to lowercase
 lowercase_vector <- tolower(a)
 # Find unique words
@@ -50,11 +64,11 @@ t <- t[-which(is.na(rowSums(t))),]
 # Use the same idea to create common words pairs matrix P
 p <- cbind(col_1,col_2)[1:length(col_2),]
 p <- p[-which(is.na(rowSums(p))),]
+
 # Task 8
 word <- c(b[t[1,1]],b[t[1,2]])
 
-tun1 <- c()
-tun2 <- c()
+
 ty1 <- t[1,1]
 ty2 <- t[1,2]
 
@@ -63,26 +77,35 @@ probability <- function(name,freq){
   for (i in 1:length(name)){
     pb <- append(pb,freq[i]/sum(freq))
   }
+  return (pb)
 }
 
 for (n in 1:48){
+  tun <- c()
+  tun1<- c()
   for (i in 1:nrow(t)) {
-    if (t[i,1] == ty1){
-      tun1 <- rbind(tun1,t[i,])
+    if (t[i,1] == ty1 && t[i,2] == ty2){
+      tun <- rbind(tun,t[i,3])
+      tun1<- rbind(tun1,t[i,])
     }
   }
-  tun1
+  print(tun1)
+  freq1 <- as.numeric(table(tun))
+  name1 <- as.numeric(names(table(tun)))
   
-  for (i in 1:nrow(tun1)) {
-    if (tun1[i,2] == ty2){
-      tun2 <- rbind(tun2,tun1[i,])
-    }
+  
+  print(probability(name1,freq1))
+  
+  if(length(probability(name1,freq1))==1){
+    ty3<-as.numeric(tun[1])
   }
-  tun2
+  else{
+    ty3 <- sample(as.numeric(names(table(tun))),size=1,replace = FALSE, prob = probability(name1,freq1))
+  }
   
-  freq1 <- as.numeric(table(tun2[,3]))
-  name1 <- as.numeric(names(table(tun2[,3])))
-  ty3 <- sample(as.numeric(names(table(tun2[,3]))),size=1,replace = FALSE, prob = probability(name1,freq1))
+  print(ty3)
+  print(b[ty3])
+  
   word <- append(word,b[ty3])
   ty1 <- ty2
   ty2 <- ty3
