@@ -1,6 +1,7 @@
 # Stat Programming - Group Projects 1 - Due on 6th Oct
-
-# Task 1-5: Bo Gao
+# Group members: Bo Gao, Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
+# Task 1: Create the group repo: Zheyue Lin
+# Task 2-5: Bo Gao
 - [x] Read txt file into R
 - [x] Write a function 'split_punct', which takes a vector of words as input along with a punctuation mark
       Search for each word containing the punctuation mark  
@@ -15,7 +16,7 @@
 - [x] Create a vector 'b' that hold the m most commonly occuring words. (m ≈ 1000)
 - [x] Make the matrices of common word triplets(T) and pairs(P).
 
-# Task 8: Xinran Zhu
+# Task 8: Xinran Zhu, Bo Gao
 - [ ] Write code to simulate 50-word sections from your model.  
       Do this by using the model to simulate integers indexing words in vector 'b'.  
       Then print out the corresponding text with 'cat'.
@@ -31,8 +32,8 @@
 # Some questions to ask:
 1. About the working path
 2. What about these special marks? 
-  ![8216fae1ded322a2cf5138aa395b90f](https://github.com/Michelle-LZY/Proj1/assets/136700489/7837896c-3778-4043-8d0e-57a33e71647e)
-  ![9086e44a00d91ab74d04a093a9a67cf](https://github.com/Michelle-LZY/Proj1/assets/136700489/c87fe0e8-3f28-4415-af41-3993c50d2170)
+    ![8216fae1ded322a2cf5138aa395b90f](https://github.com/Michelle-LZY/Proj1/assets/136700489/7837896c-3778-4043-8d0e-57a33e71647e)
+    ![9086e44a00d91ab74d04a093a9a67cf](https://github.com/Michelle-LZY/Proj1/assets/136700489/c87fe0e8-3f28-4415-af41-3993c50d2170)
 3. Where should we start the first two columns for genrate the sections 50-word sections?
 4. To continuously generate the words in a way Where to break?
 5. How to decide the first two words of task 9's section. How many sections we should generate.
