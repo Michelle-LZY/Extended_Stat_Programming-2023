@@ -7,8 +7,8 @@
 # Our tasks are nearly evenly distributed, we communicated well and we supported each other during this journey
 
 #Task 1-3
-# setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
-a <- scan("4300-0.txt",what="character",skip=73,nlines=32858-73)
+setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
+a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
 a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
 
 
@@ -101,11 +101,11 @@ func_p<-function(p_1){
 }
 
 # Choose the beginning word for 50-words section form b
-ty1 <- sample(b,size=1,replace = FALSE, prob = freq_b)
+ty1 <- sample(c(1:length(b)),size=1,replace = FALSE, prob = freq_b)
 # Choose the second word from p
 ty2 <- func_p(ty1)
 # Put them into output list
-word <- c(ty1,b[ty2])
+word <- c(b[ty1],b[ty2])
 
 # Sample the remaining 48 words
 for (n in 1:48){
