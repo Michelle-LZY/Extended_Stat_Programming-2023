@@ -4,11 +4,11 @@
 # Xinran Zhu(s2508695) and Bo Gao(s2511232) collaborated on building the model to generate 50-word section
 # Bo Gao(s2511232) crafted the comparison section
 # Zheyue Lin(s2519324) modified the vector b 
-# Our tasks are nearly evenly distributed, we communicated well and we supported each other during this journey
+# Our tasks are nearly evenly distributed, we communicated well and we supported each other during this journey.
 
 #Task 1-3
-setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
-a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
+#setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
+a <- scan("4300-0.txt",what="character",skip=73,nlines=32858-73)
 a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
 
 
@@ -29,7 +29,8 @@ split_punct<-function(punctuation){
   a_new[insert_location]<-punctuation
   # Insert words in the returned vector
   a_new[-insert_location]<-a_nopunctuation
-  
+  # Remove the blanks in a
+  a_new <- a_new[a_new != ""] 
   return(a_new)
 }
 
@@ -41,6 +42,7 @@ for (i in punctuation_list){
   # Use split_punct in a
   a<-split_punct(i)
 }
+
 
 
 
@@ -95,7 +97,7 @@ func_p<-function(p_1){
   freq_p <- as.numeric(table(submatrix_p[,2]))
   name_p <- as.numeric(names(table(submatrix_p[,2])))
   # If it has a single row, return the last value
-  if(length(name_p)==1) return (as.numeric(as.numeric(name_p[1])))
+  if(length(name_p)==1){return (as.numeric(as.numeric(name_p[1])))}
   # Use sample() to get a value
   return (sample(name_p, size=1, replace = FALSE, prob = freq_p))
 }
@@ -112,11 +114,9 @@ for (n in 1:48){
   # Get the submatrix of t according to the first and the second columns
   submatrix <- t[t[,1] == ty1 & t[,2] ==  ty2,]
   # If the submatrix is empty, sample according to matrix p 
-  if (length(submatrix)==0){
-    ty3<-func_p(ty2)
-  }
+  if (length(submatrix)==0){ty3<-func_p(ty2)
   # If it has a single row, return that value
-  else if(length(submatrix)==3){
+  }else if(length(submatrix)==3){
     ty3<-as.numeric(submatrix[3])
   }
   else{
@@ -124,9 +124,9 @@ for (n in 1:48){
     freq <- as.numeric(table(submatrix[,3]))
     name <- as.numeric(names(table(submatrix[,3])))
     # If it has a single item, return that value
-    if(length(name)==1) ty3 <- as.numeric(as.numeric(name[1]))
+    if(length(name)==1){ty3 <- as.numeric(as.numeric(name[1]))
     # Use 'sample()' to get a value
-    else ty3 <- sample(name,size=1,replace = FALSE, prob = freq)
+    }else {ty3 <- sample(name,size=1,replace = TRUE, prob = freq)}
     
   }
   #put the value in output list
@@ -135,7 +135,7 @@ for (n in 1:48){
   ty1 <- ty2
   ty2 <- ty3
 }
-cat("Task 8 output:\n",word)
+cat("Generating 50-word section output:\n",word)
 
 
 
@@ -155,7 +155,7 @@ frequencies <- table(a)
 B<-b
 # Iterative all the words in b
 for (i in 1:length(b)){
-  # Make this word beggin with a capital letter, e.g. apple -> Apple
+  # Make this word beggin with one capital letter, e.g. apple -> Apple
   upper_word<-paste(toupper(substring(b[i], 1, 1)), substring(b[i], 2, nchar(b[i])), sep = "")
   # Check whether this word appears more often with a capital letter or not
   if (upper_word %in% a){
