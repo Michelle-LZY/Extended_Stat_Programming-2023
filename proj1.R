@@ -3,7 +3,8 @@
 # Zheyue Lin(s2519324) counted the frequencies of unique words and made matrix T and P
 # Xinran Zhu(s2508695) and Bo Gao(s2511232) collaborated on building the model to generate 50-word section
 # Bo Gao(s2511232) crafted the comparison section
-# Zheyue Lin(s2519324) searched the word
+# Zheyue Lin(s2519324) modified the vector b 
+# Our tasks are nearly evenly distributed, we communicated well and we supported each other during this journey
 
 #Task 1-3
 # setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
