@@ -1,11 +1,8 @@
-#s<-("You, may. copy; it! give: it? away, or. re-use; it! under: the? terms,
-#of. the; Project!")
-#a<-strsplit(s," ",)[[1]]
-
 #Task 1-3
 setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
 a <- scan("p1.txt",what="character",skip=73,nlines=32858-73)
 a <- gsub("_(","",a,fixed=TRUE) ## remove "_("
+
 
 #Task 4
 #the function of split_punct for separate punctuation marks
@@ -27,6 +24,7 @@ split_punct<-function(punctuation){
   return(a_new)
 }
 
+
 #Task 5
 #create punctuation vector
 punctuation_list<-c(",",".",";","!",":","?")
@@ -43,16 +41,17 @@ for (i in punctuation_list){
 lowercase_vector <- tolower(a)
 # Find unique words
 unique_vector <- unique(lowercase_vector)
-print(unique_vector) 
+ 
 # Use match() to determine indices
 indices <- match(lowercase_vector,unique_vector)
 # Use tabulate to count occurrences of each unique word
 counts <- tabulate(indices)
-print(counts)
+
 # Choose the 1000th frequency as the threshold after sorted the frequencies decreasingly
 threshold <- sort(counts,decreasing = TRUE)[1000]
 # Create a vector b of the m most commonly occurring words (m ≈ 1000)
 b <- unique_vector[counts>=threshold]
+
 
 # Task 7
 # Create common words triplets matrix T
@@ -65,91 +64,78 @@ t <- t[-which(is.na(rowSums(t))),]
 p <- cbind(col_1,col_2)[1:length(col_2),]
 p <- p[-which(is.na(rowSums(p))),]
 
+
 # Task 8
-word <- c(b[t[1,1]],b[t[1,2]])
+#get the frequency of items in b
+freq_b<-counts[counts>=threshold]
 
 
-ty1 <- t[1,1]
-ty2 <- t[1,2]
-
-probability <- function(name,freq){
-  pb <- c()
-  for (i in 1:length(name)){
-    pb <- append(pb,freq[i]/sum(freq))
+#define the function about getting values from p matrix
+func_p<-function(p_1){
+  #get the submatrix of p according the first column
+  submatrix_p<-p[p[,1]==p_1,]
+  #if submatrix of p is empty, sample according to the frequency of items in b 
+  if (length(submatrix_p)==0){
+    return(sample(c(1:length(b)),size=1,replace = FALSE, prob = freq_b))
   }
-  return (pb)
+  #if it has a single row, return the last value. Because it means the probablity of the value is 1.
+  if (length(submatrix_p)==2){
+    return (as.numeric(submatrix_p[2]))
+  }
+  #get frequency of items and unique values in second column in submatrix of p 
+  freq_p <- as.numeric(table(submatrix_p[,2]))
+  name_p <- as.numeric(names(table(submatrix_p[,2])))
+  #if it has a single row, return the last value
+  if(length(name_p)==1) return (as.numeric(as.numeric(name_p[1])))
+  #use sample() to get a value
+  return (sample(name_p,size=1,replace = FALSE, prob = freq_p))
 }
 
+
+#get the first value of 50-words section according to b and the second one according to p
+ty1 <- sample(b,size=1,replace = FALSE, prob = freq_b)
+ty2 <- func_p(ty1)
+#put them in output list
+word <- c(ty1,b[ty2])
+
+#sample the remaining 48 words
 for (n in 1:48){
-  tun <- c()
-  tun1<- c()
-  for (i in 1:nrow(t)) {
-    if (t[i,1] == ty1 && t[i,2] == ty2){
-      tun <- rbind(tun,t[i,3])
-      tun1<- rbind(tun1,t[i,])
-    }
+  #get the submatrix of t according the first and second column
+  submatrix <- t[t[,1] == ty1 & t[,2] ==  ty2,]
+  #if submatrix of t is empty, sample according to the matrix of p 
+  if (length(submatrix)==0){
+    ty3<-func_p(ty2)
   }
-  print(tun1)
-  freq1 <- as.numeric(table(tun))
-  name1 <- as.numeric(names(table(tun)))
-  
-  
-  print(probability(name1,freq1))
-  
-  if(length(probability(name1,freq1))==1){
-    ty3<-as.numeric(tun[1])
+  #if it has a single row, return the last value.
+  else if(length(submatrix)==3){
+    ty3<-as.numeric(submatrix[3])
   }
   else{
-    ty3 <- sample(as.numeric(names(table(tun))),size=1,replace = FALSE, prob = probability(name1,freq1))
+    #get frequency of items and unique values in third column in submatrix of t 
+    freq <- as.numeric(table(submatrix[,3]))
+    name <- as.numeric(names(table(submatrix[,3])))
+    #if it has a single item, return the value
+    if(length(name)==1) ty3 <- as.numeric(as.numeric(name[1]))
+    #use sample() to get a value
+    else ty3 <- sample(name,size=1,replace = FALSE, prob = freq)
+    
   }
-  
-  print(ty3)
-  print(b[ty3])
-  
+  #put the value in output list
   word <- append(word,b[ty3])
+  #update the words used to match
   ty1 <- ty2
   ty2 <- ty3
 }
+print("task 8 output")
 word
 
 
-#######
-ty1 <- t[120,1]
-ty2 <- t[120,2]
-word <- c(b[ty1],b[ty2])
+#Task 9
+print("task 9 output")
+#use sample() to get 50 words according the frequency of words in b
+sample(b,size=50,replace = TRUE, prob = freq_b)
 
-probability <- function(name,freq){
-  pb <- c()
-  for (i in 1:length(name)){
-    pb <- append(pb,freq[i]/sum(freq))
-    return(pb)
-  }
-}
 
-for (n in 1:48){
-  tun <- c()
-  for (i in 1:nrow(t)) {
-    if (t[i,1] == ty1 & t[i,2] == ty2){
-      tun <- rbind(tun,t[i,3])
-    }
-  }
-  tun
-
-  freq <- as.numeric(table(tun))
-  name <- as.numeric(names(table(tun)))
-  
-  if(length(probability(name,freq))==1){
-    ty3<-as.numeric(tun[1])
-  }
-  else{
-    ty3 <- sample(name,size=1,replace = FALSE, prob = probability(name,freq))
-  }
-  
-  word <- append(word,b[ty3])
-  ty1 <- ty2
-  ty2 <- ty3
-}
-word
 
 
 
