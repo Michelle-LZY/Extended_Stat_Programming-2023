@@ -32,8 +32,6 @@
 # Some questions to ask:
 1. About the working path
 2. What about these special marks? 
-    ![8216fae1ded322a2cf5138aa395b90f](https://github.com/Michelle-LZY/Proj1/assets/136700489/7837896c-3778-4043-8d0e-57a33e71647e)
-    ![9086e44a00d91ab74d04a093a9a67cf](https://github.com/Michelle-LZY/Proj1/assets/136700489/c87fe0e8-3f28-4415-af41-3993c50d2170)
 3. Where should we start the first two columns for genrate the sections 50-word sections?
 4. To continuously generate the words in a way Where to break?
 5. How to decide the first two words of task 9's section. How many sections we should generate.
