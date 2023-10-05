@@ -1,3 +1,10 @@
+# Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
+# Bo Gao(s2511232) completed pre-processing of orginal text, designed 'split_punct()' and created vector a
+# Zheyue Lin(s2519324) counted the frequencies of unique words and made matrix T and P
+# Xinran Zhu(s2508695) and Bo Gao(s2511232) collaborated on building the model to generate 50-word section
+# Bo Gao(s2511232) crafted the comparison section
+# Zheyue Lin(s2519324) searched the word
+
 #Task 1-3
 # setwd("D:/Edinburgh University/ESP/Work/") ## comment out of submitted
 a <- scan("4300-0.txt",what="character",skip=73,nlines=32858-73)
@@ -142,7 +149,6 @@ cat("Task 9 output:\n",word_task9)
 # Find the words in the common words' list
 # that usually begin with a capital letter in the original text 
 # and then substitute them in the matrix T and P
-
 frequencies <- table(a)
 # Modify vector
 B<-b
