@@ -69,10 +69,10 @@ col_2 <- match(lowercase_vector[2:length(lowercase_vector)],b)
 col_3 <- match(lowercase_vector[3:length(lowercase_vector)],b)
 # The number of rows are different for col_1, col_2 and col_3
 # So we dropped the redundant rows
-t <- cbind(col_1,col_2,col_3)[1:length(col_3),]
+t <- cbind(col_1[1:length(col_3)],col_2[1:length(col_3)],col_3)
 t <- t[-which(is.na(rowSums(t))),]
 # Use the same idea to create common words pairs matrix P
-p <- cbind(col_1,col_2)[1:length(col_2),]
+p <- cbind(col_1[1:length(col_2)],col_2)
 p <- p[-which(is.na(rowSums(p))),]
 
 
@@ -147,31 +147,59 @@ cat("Task 9 output:\n",word_task9)
 
 
 # Task 10
-# Find the words in the common words' list
-# that usually begin with a capital letter in the original text 
-# and then substitute them in the matrix T and P
 frequencies <- table(a)
-# Modify vector
+# B will be the modified b
 B<-b
-# Iterative all the words in b
-for (i in 1:length(b)){
-  # Make this word beggin with one capital letter, e.g. apple -> Apple
-  upper_word<-paste(toupper(substring(b[i], 1, 1)), substring(b[i], 2, nchar(b[i])), sep = "")
-  # Check whether this word appears more often with a capital letter or not
-  if (upper_word %in% a){
-    if(b[i] %in% a){
-      if (frequencies[upper_word]>frequencies[b[i]]){
-        # If this word appears with a capital letter more often, 
-        # we update the new word in the modified vector B
-        B[i]<-upper_word
-      } 
-      # If in the original text this word only appears beginning with a capital
-      # letter, then immediately update the new word
-    }else{B[i]<-upper_word}
+for (i in 1:length(B)){
+  # Make this word beginning with a capital letter, e.g. apple -> Apple
+  capital_letter <-paste(toupper(substring(b[i], 1, 1)), substring(b[i], 2, nchar(b[i])), sep = "")
+  # Considering the situation that the whole words are capital letters
+  upper_word <- toupper(b[i])
+  # Skip some special situations, like "m’coy"
+  if ((!capital_letter %in% a) & (!upper_word %in% a) & (!b[i] %in% a)){
+    next
+  }else{
+    freq_temporary <- c(frequencies[capital_letter],frequencies[upper_word],frequencies[b[i]])
+    max_term <- names(which.max(freq_temporary))
+    max_term
+    B[i]<-max_term
   }
 }
 
+# Choose the beginning word for 50-words section form b
+ty1 <- sample(c(1:length(B)),size=1,replace = FALSE, prob = freq_b)
+# Choose the second word from p
+ty2 <- func_p(ty1)
+# Put them into output list
+word <- c(B[ty1],B[ty2])
 
+# Sample the remaining 48 words
+for (n in 1:48){
+  # Get the submatrix of t according to the first and the second columns
+  submatrix <- t[t[,1] == ty1 & t[,2] ==  ty2,]
+  # If the submatrix is empty, sample according to matrix p 
+  if (length(submatrix)==0){ty3<-func_p(ty2)
+  # If it has a single row, return that value
+  }else if(length(submatrix)==3){
+    ty3<-as.numeric(submatrix[3])
+  }
+  else{
+    # Get the words and their frequencies in the third column
+    freq <- as.numeric(table(submatrix[,3]))
+    name <- as.numeric(names(table(submatrix[,3])))
+    # If it has a single item, return that value
+    if(length(name)==1){ty3 <- as.numeric(as.numeric(name[1]))
+    # Use 'sample()' to get a value
+    }else {ty3 <- sample(name,size=1,replace = TRUE, prob = freq)}
+    
+  }
+  #put the value in output list
+  word <- append(word,B[ty3])
+  # Update the words used to begin a new iterative
+  ty1 <- ty2
+  ty2 <- ty3
+}
+cat("Generating 50-word section including some words with capital letters output:\n",word)
 
 
 
