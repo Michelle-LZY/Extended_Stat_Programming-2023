@@ -136,7 +136,7 @@ print("task 9 output")
 sample(b,size=50,replace = TRUE, prob = freq_b)
 
 
-
+#Task 10
 
 
 
