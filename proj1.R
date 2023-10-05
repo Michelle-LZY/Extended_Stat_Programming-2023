@@ -1,5 +1,5 @@
 # Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
-# Bo Gao(s2511232) completed pre-processing of orginal text, designed 'split_punct()' and created vector a
+# Bo Gao(s2511232) and Xinran Zhu(s2508695) completed pre-processing of orginal text, designed 'split_punct()' and created vector a
 # Zheyue Lin(s2519324) counted the frequencies of unique words and made matrix T and P
 # Xinran Zhu(s2508695) and Bo Gao(s2511232) collaborated on building the model to generate 50-word section
 # Bo Gao(s2511232) crafted the comparison section
