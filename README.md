@@ -1,5 +1,5 @@
 # Stat Programming - Group Projects 1 - Due on 6th Oct
-# Group members: Bo Gao, Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
+# Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
 # Task 1: Create the group repo: Zheyue Lin
 # Task 2-5: Bo Gao
 - [x] Read txt file into R
