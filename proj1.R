@@ -97,7 +97,7 @@ func_p<-function(p_1){
   freq_p <- as.numeric(table(submatrix_p[,2]))
   name_p <- as.numeric(names(table(submatrix_p[,2])))
   # If it has a single row, return the last value
-  if(length(name_p)==1){return (as.numeric(as.numeric(name_p[1])))}
+  if(length(name_p)==1){return (as.numeric(name_p[1]))}
   # Use sample() to get a value
   return (sample(name_p, size=1, replace = FALSE, prob = freq_p))
 }
@@ -126,7 +126,7 @@ for (n in 1:48){
     # If it has a single item, return that value
     if(length(name)==1){ty3 <- as.numeric(as.numeric(name[1]))
     # Use 'sample()' to get a value
-    }else {ty3 <- sample(name,size=1,replace = TRUE, prob = freq)}
+    }else {ty3 <- sample(name, size=1, replace = TRUE, prob = freq)}
     
   }
   #put the value in output list
@@ -153,20 +153,21 @@ B<-b
 for (i in 1:length(B)){
   # Make this word beginning with a capital letter, e.g. apple -> Apple
   capital_letter <-paste(toupper(substring(b[i], 1, 1)), substring(b[i], 2, nchar(b[i])), sep = "")
-  # Considering the situation that the whole words are capital letters
-  upper_word <- toupper(b[i])
-  # Skip some special situations, like "m’coy"
-  if ((!capital_letter %in% a) & (!upper_word %in% a) & (!b[i] %in% a)){
+  # Skip some special situations, like "m’coy" to avoid errors
+  if ((!capital_letter %in% a) & (!b[i] %in% a)){
     next
   }else{
-    freq_temporary <- c(frequencies[capital_letter],frequencies[upper_word],frequencies[b[i]])
+    freq_temporary <- c(frequencies[capital_letter],frequencies[b[i]])
     max_term <- names(which.max(freq_temporary))
     max_term
     B[i]<-max_term
   }
 }
 
-# Choose the beginning word for 50-words section form b
+# Since the indices in matrix t and p will link the words to B
+# We don't need to generate new t or p
+
+# Choose the beginning word for 50-words section form B
 ty1 <- sample(c(1:length(B)),size=1,replace = FALSE, prob = freq_b)
 # Choose the second word from p
 ty2 <- func_p(ty1)
@@ -188,9 +189,9 @@ for (n in 1:48){
     freq <- as.numeric(table(submatrix[,3]))
     name <- as.numeric(names(table(submatrix[,3])))
     # If it has a single item, return that value
-    if(length(name)==1){ty3 <- as.numeric(as.numeric(name[1]))
+    if(length(name)==1){ty3 <- as.numeric(name[1])
     # Use 'sample()' to get a value
-    }else {ty3 <- sample(name,size=1,replace = TRUE, prob = freq)}
+    }else {ty3 <- sample(name, size=1, replace = TRUE, prob = freq)}
     
   }
   #put the value in output list
@@ -199,7 +200,7 @@ for (n in 1:48){
   ty1 <- ty2
   ty2 <- ty3
 }
-cat("Generating 50-word section including some words with capital letters output:\n",word)
+cat("50-word section including words with capital letters output:\n",word)
 
 
 
