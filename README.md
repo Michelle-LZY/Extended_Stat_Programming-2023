@@ -1,4 +1,4 @@
-# Stat Programming - Group Projects 1 - Due on 6th Oct
+# Group Projects 1 - Due on 6th Oct
 # Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
 # Task 1: Create the group repo: Zheyue Lin
 # Task 2-5: Bo Gao
@@ -24,3 +24,5 @@
 # Task 10: Zheyue Lin
 - [x] Keep words having capital letter the most often in the original text.
 
+# Group Projects 2 - Due on 20th Oct
+![91769fffd5413849932d0b61dc978b7](https://github.com/Michelle-LZY/Extended_Stat_Programming-2023/assets/136700489/3b6c5640-4e53-4ef6-b6db-398dab343a03)
