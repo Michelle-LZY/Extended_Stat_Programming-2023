@@ -4,6 +4,7 @@
 # Practice 1 - Due on 6th Oct
 <details>
   <summary>Click me to show details about Practice 1</summary>
+
 ### Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
 ### Task 1: Create the group repo: Zheyue Lin
 ### Task 2-5: Bo Gao
