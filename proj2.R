@@ -13,9 +13,9 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
   start <- c()
   # "f" is a data.frame to store the processing time for cars in the French stations
   # Choosing to use a data.frame to store the processing time to avoid messing up each station
-  # Columns in "f" stand for each French station
-  # Firstly creating columns and columns names for data frame "f", and then construct
-  # the data frame by the column names
+  # Columns in "f" stand for each French station, namely "station_1", "station_2", ..., "station_mf"
+  # The first row in "f" stores the number of cars waiting in the station
+  # The second row in "f" stores the processing time for each car
   column_names_f <- paste0("station_", seq_len(mf))
   f <- data.frame(matrix(0,ncol=length(column_names_f), nrow=2))
   colnames(f) <- column_names_f
@@ -47,11 +47,13 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
       }
     }
       # One iteration in this for loop means one second has passed, so we cut one 
-      # second off from the positive processing time for each car
-      # For the cars that have finished being processed in the French station but 
-      # are not moving to the British station, just waiting in the French station 
-      # for an available slot in the British station, we leave the processing time unchanged
-      f <- as.data.frame(lapply(df, function(x) ifelse(x > 0, x - 1, x)))
+      # second off from the positive processing time for each car.
+    f["dt", ] <- apply(f["dt", , drop = FALSE], 1, function(row) {
+      ifelse(row > 0, row - 1, row)
+    })
+    b["dt", ] <- apply(b["dt", , drop = FALSE], 1, function(row) {
+      ifelse(row > 0, row - 1, row)
+    })
   }
   return(c(nf,nb,eq))
 }
