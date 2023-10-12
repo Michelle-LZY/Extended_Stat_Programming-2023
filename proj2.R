@@ -1,3 +1,22 @@
+insert <- function(station,tr,tm){
+  qn_min <- which.min(station["qn",])
+  station["qn",qn_min]<- station["qn",qn_min]+1
+  if(station["dt",qn_min]==-1){
+    station["dt",qn_min] <-round(runif(1,tm,tm+tr))
+  }
+  return (station)
+}
+
+finish <- function(station,queue,tr,tm){
+  station["qn",queue]<-station["qn",queue]-1
+  if(station["qn",queue] > 0){
+    station["dt",queue] <- round(runif(1,tm,tm+tr))
+  }
+  else{
+    station["dt",queue] <- -1
+  }
+  return(station)
+}
 # Define the function "qsim(mf,mb,a.rate,trb,trf,tmb,tmf,maxb)"
 # "mf" is the number of French stations
 # "mb" is the number of British stations
@@ -11,41 +30,63 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
   # Here are some variables we will use later
   # "start" is a list to store the time stamp when a new car arrives at the French stations 
   start <- c()
+  end<-c()
   # "f" is a data.frame to store the processing time for cars in the French stations
   # Choosing to use a data.frame to store the processing time to avoid messing up each station
   # Columns in "f" stand for each French station, namely "station_1", "station_2", ..., "station_mf"
   # The first row in "f" stores the number of cars waiting in the station
   # The second row in "f" stores the processing time for each car
   column_names_f <- paste0("station_", seq_len(mf))
-  f <- data.frame(matrix(0,ncol=length(column_names_f), nrow=2))
+  f <- data.frame(matrix(c(0,-1),ncol=length(column_names_f), nrow=2))
   colnames(f) <- column_names_f
   rownames(f) <- c("qn","dt")
-  print(f)
   # "b" is a data.frame to store the processing time for cars in the British stations
   # Same ideas to build "b"
   column_names_b <- paste0("station_", seq_len(mb))
-  b <- data.frame(matrix(0,ncol=length(column_names_b), nrow=2))
+  b <- data.frame(matrix(c(0,-1),ncol=length(column_names_b), nrow=2))
   colnames(b) <- column_names_b
   rownames(b) <- c("qn","dt")
-  print(b)
   
   
   # This model will simulate for a 2-hour period, in total 7200 seconds
-  for (t in 1:7200){
+  for (t in 1:(2*60*60)){
+    #print(t)
+    #print(f)
+    #print("----------------------------------------------------------------------")
+    #print(b)
+    for( i in which(b["dt", ] %in% 0)){
+      b <- finish(b,i,trb,tmb)
+      end <- append(end,t)
+      #print("finish B to end,the new b")
+      #print(b)
+    }
+    for (i in which(f["dt",] %in% 0)){
+      if(sum(b["qn",])<maxb*mb){
+        f <- finish(f,i,trf,tmf)
+        b <- insert(b,trb,tmb)
+      }
+    }
+    
+    
+    
     # Provided "a.rate" this input as the arriving probability, we use "sample()" 
     # function to randomly choose "TRUE" or "FALSE"
     # "TURE" indicates a car arrives while "False" indicating no cars arrive
     # Ignoring the situation that more than one car arriving at the same time, so 
     # "size" attribute in "sample()" function is 1
-    if (t<=5400){ # New cars only arrive at French stations in the first 1.5 hours
+    if (t<=(90*60)){ # New cars only arrive at French stations in the first 1.5 hours
       if (sample(c(TRUE,FALSE), size = 1, prob = c(a.rate,1-a.rate))){
         # If "sample()" function generates "TURE" as the result, which means a new car 
         # arrives at the French stations, we will add a time stamp to the "start" list
-        start.append(start,t)
-        
-        
+        start <- append(start,t)
+        #print("start a new car")
+        f <- insert(f,trf,tmf)
       }
     }
+    
+    
+    
+    
       # One iteration in this for loop means one second has passed, so we cut one 
       # second off from the positive processing time for each car.
     f["dt", ] <- apply(f["dt", , drop = FALSE], 1, function(row) {
@@ -55,6 +96,10 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
       ifelse(row > 0, row - 1, row)
     })
   }
+  nf=sum(f["qn",])/mf
+  nb=sum(b["qn",])/mb
+  eq=1
+  
   return(c(nf,nb,eq))
 }
-qsim()
+print(qsim())
