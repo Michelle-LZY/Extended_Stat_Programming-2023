@@ -13,8 +13,7 @@ insert <- function(station,tr,tm){
   # if the remaining queue didn't have any car, then use random uniform distribution
   # to find it's processing time and add to the list of processing time
   if(station["dt",qn_min]==-1){
-    station["dt",qn_min] <- sample(tr:(tm+tr),1)
-    print(station["dt",qn_min])
+    station["dt",qn_min] <- sample(tm:(tm+tr),1)
   }
   return (station)
 }
@@ -31,7 +30,7 @@ finish <- function(station,queue,tr,tm){
   # if not, let the processing time equals to "-1" which represent there is no car
   # in the queue
   if(station["qn",queue] > 0){
-    station["dt",queue] <- sample(tr:(tm+tr),1)
+    station["dt",queue] <- sample(tm:(tm+tr),1)
   }
   else{
     station["dt",queue] <- -1
@@ -52,8 +51,6 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
   # "start" is a list to store the time stamp when a new car arrives at the French stations 
   # "end" is a list to store the time stamp when a car finish processing and leave the 
   # Brisish station
-  start <- c(0)
-  end<-c(0)
   # "f" is a data.frame to store the processing time for cars in the French stations
   # Choosing to use a data.frame to store the processing time to avoid messing up each station
   # Columns in "f" stand for each French station, namely "station_1", "station_2", ..., "station_mf"
@@ -73,6 +70,7 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
   nf <- c()
   nb <- c()
   eq <- c()
+  
   # This model will simulate for a 2-hour period, in total 7200 seconds
   for (t in 1:(2*60*60)){
     # first find the column that the processing time equals to 0 in British station
@@ -82,7 +80,6 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
     # that leave French station and go to British station directly
     for( i in which(b["dt", ] %in% 0)){
       b <- finish(b,i,trb,tmb)
-      end <- append(end,t)
     }
     # find the column that the processing time equals to 0 in French station
     for (i in which(f["dt",] %in% 0)){
@@ -105,7 +102,6 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
       if (sample(c(TRUE,FALSE), size = 1, prob = c(a.rate,1-a.rate))){
         # If "sample()" function generates "TURE" as the result, which means a new car 
         # arrives at the French stations, we will add a time stamp to the "start" list
-        start <- append(start,t)
         #print("start a new car")
         f <- insert(f,trf,tmf)
       }
@@ -121,11 +117,12 @@ qsim <- function(mf=5,mb=5,a.rate=.1,trb=40,trf=40,tmb=30,tmf=30,maxb=20) {
     b["dt", ] <- apply(b["dt", , drop = FALSE], 1, function(row) {
       ifelse(row > 0, row - 1, row)
     })
+    avg_f <- sum(f["qn",])/mf
+    avg_b <-sum(b["qn",])/mb
     
-    nf <- append(nf,sum(f["qn",])/mf)
-    nb <- append(nb,sum(b["qn",])/mb)
-    
-    eq <- append(eq,(sum(end)+(length(start)-length(end))*t-sum(start))/length(start))
+    nf <- append(nf,avg_f)
+    nb <- append(nb,avg_b)
+    eq <- append(eq,avg_f*(tmf + trf/2) + avg_b*(tmb + trb/2))
   }
   
 
@@ -165,17 +162,20 @@ matplot(1:7200, jqsim[[3]], type='l', xlab="time", ylab="expected queuing time",
         changes over time when minimum 
         British handling time set to be 40s")
 
+
 # in order to find the probability of at least one car missing ferry departure,
 # we need to run qsin() function 100 times
 k <- 0
 for (i in 1:100){
   # if the final average queue length in Frencg station isn't zero, that means 
   # there is at least one car missing ferry departure
-  if (qsim()[[1]][7200] != 0){
+  kqsim<-qsim(a.rate = 0.1)
+  if (kqsim[[2]][7200]!=0 || kqsim[[1]][7200]!=0){
+      print(2)
       k <- k + 1
   }
 }
 k
 
-print(paste0("The probability of at least one car missing the ferry departure is", k/100))
+print(paste0("The probability of at least one car missing the ferry departure is ", k/100))
 
