@@ -1,5 +1,5 @@
-# Define the function "insert"
-# in oder to find the shorted queue and insert the new arrival car
+# Define the function "insert()" to find the shortest queue and insert the new 
+# arrival car 
 # "station" is an array with two numerical lists
 # station["qn"] is the list of number representing how many cars in that queue
 # station["dt"] is the list of number representing the processing time for each queue
@@ -7,19 +7,20 @@
 insert <- function(station,tr,tm){
   # find the shortest queue
   qn_min <- which.min(station["qn",]) 
-  # the new arrival car joins the shortest queue
+  # The newly arrived car will join the shortest queue
   station["qn",qn_min]<- station["qn",qn_min]+1
   # "-1" represent there isn't any car in the queue
-  # if the remainging queue didn't have any car, then use random uniform distribution
+  # if the remaining queue didn't have any car, then use random uniform distribution
   # to find it's processing time and add to the list of processing time
   if(station["dt",qn_min]==-1){
-    station["dt",qn_min] <- round(runif(1,tm,tm+tr))
+    station["dt",qn_min] <- sample(tr:(tm+tr),1)
+    print(station["dt",qn_min])
   }
   return (station)
 }
 
 # Define the function "finish"
-# in oder to let car that have been processed leave the queue and record the processing 
+# in order to let car that have been processed leave the queue and record the processing 
 # time for that car
 finish <- function(station,queue,tr,tm){
   # there is one car finish processing and need to leave, then the number of cars
@@ -30,7 +31,7 @@ finish <- function(station,queue,tr,tm){
   # if not, let the processing time equals to "-1" which represent there is no car
   # in the queue
   if(station["qn",queue] > 0){
-    station["dt",queue] <- round(runif(1,tm,tm+tr))
+    station["dt",queue] <- sample(tr:(tm+tr),1)
   }
   else{
     station["dt",queue] <- -1
