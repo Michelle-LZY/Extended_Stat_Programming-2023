@@ -54,8 +54,8 @@ insert <- function(station, tr, tm){
 
 
 
-t_1<-2*60*60 # Total simulation time will be 2 hours, equally 7200 seconds
-t_2<-1.5*60*60 # New cars will only enter French station in the first 1.5 hours
+t_total <- 2*60*60 # Total simulation time will be 2 hours, equally 7200 seconds
+t_newcar <- 1.5*60*60 # New cars will only enter French station in the first 1.5 hours
 
 
 
@@ -93,14 +93,21 @@ qsim <- function(mf = 5, mb = 5, a.rate = 0.1, trb = 40, trf = 40, tmb = 30, tmf
   # Before the simulation starts, the time having passed is set to be zero
   t_passed <- 0
   
-  # while loop for t_1 simulation time
-  while(t_passed<t_1){
-    # Sort the processing time "dt" in the station matrix and pick out the smallest one
-    min_processing_t <- min(min(f["dt",]),min(b["dt",]))
+  # while loop for t_total simulation time
+  while(t_passed < t_total){
+    print("t")
+    print(t_passed)
+    print("f")
+    print(f)
+    print("b")
+    print(b)
     
-    if (min_processing_t>0){
+    # Sort the processing time "dt" in the station matrix and pick out the smallest one
+    min_processing_t <- min(min(f["dt", ]), min(b["dt", ]))
+    
+    if (min_processing_t > 0){
       for (s in 1:min_processing_t){
-        if(t_passed < t_2){
+        if(t_passed < t_newcar){
           # During this time, there might be new cars arriving in the French stations if it's in the first 1.5 hours simulation time
           # Use "sample()" to simulate whether there is new car arrived
           # "True" stands for a new car arrived and "False" means not
@@ -110,20 +117,20 @@ qsim <- function(mf = 5, mb = 5, a.rate = 0.1, trb = 40, trf = 40, tmb = 30, tmf
             # Average queue length in French station will increase 1/mf
             # Expected processing time will increase 1/mf*(tmf + trf/2)
             f["qn", which.min(f["qn", ])] <- f["qn", which.min(f["qn", ])] + 1
-            nf[[length(nf)+1]] <- nf[[length(nf)]]+1/mf 
-            eq[[length(eq)+1]] <- eq[[length(eq)]]+1/mf*(tmf + trf/2) 
+            nf[[length(nf) + 1]] <- nf[[length(nf)]] + 1/mf 
+            eq[[length(eq) + 1]] <- eq[[length(eq)]] + 1/mf*(tmf + trf/2) 
             t_passed <- t_passed + 1 # One second has passed
           }else{
             # The average queuing length in French stations and expected processing time won't change if there is no car arrived
-            nf[[length(nf)+1]] <- nf[[length(nf)]]
-            eq[[length(eq)+1]] <- eq[[length(eq)]]
+            nf[[length(nf) + 1]] <- nf[[length(nf)]]
+            eq[[length(eq) + 1]] <- eq[[length(eq)]]
             t_passed <- t_passed + 1
           }
         }else{
           # There won't be new cars arriving after t_passed is above 1.5 hours
           # "nf" and "eq" won't change for min_processing_t-s+1 this period time
-          nf<- c(nf, rep(nf[[length(nf)]],min_processing_t-s+1))
-          eq<- c(eq, rep(eq[[length(eq)]],min_processing_t-s+1))
+          nf<- c(nf, rep(nf[[length(nf)]],min_processing_t - s + 1))
+          eq<- c(eq, rep(eq[[length(eq)]],min_processing_t - s + 1))
           t_passed <- t_passed + min_processing_t - s + 1 # min_processing_t - s + 1 seconds have passed
           break
         }
@@ -159,7 +166,7 @@ qsim <- function(mf = 5, mb = 5, a.rate = 0.1, trb = 40, trf = 40, tmb = 30, tmf
         }
       }
       # New cars arrive at French stations in the first 1.5 hours
-      if (t_passed< t_2){
+      if (t_passed < t_newcar){
         if (sample(c(TRUE,FALSE), size = 1, prob = c(a.rate, 1-a.rate))){
           # If "sample()" function generates "TURE" as the result, 
           # which means a new car arrives at the French stations
@@ -184,8 +191,8 @@ qsim <- function(mf = 5, mb = 5, a.rate = 0.1, trb = 40, trf = 40, tmb = 30, tmf
       avg_b <- sum(b["qn", ])/mb 
       
       # Update the average queue length and expected waiting time for this second to the lists storing results across the simulation
-      nf[[length(nf)+1]] <- avg_f
-      nb[[length(nb)+1]] <- avg_b
+      nf[[length(nf) + 1]] <- avg_f
+      nb[[length(nb) + 1]] <- avg_b
       eq[[length(eq) + 1]] <- avg_f*(tmf + trf/2) + avg_b*(tmb + trb/2)
     }
   }
@@ -230,7 +237,7 @@ matplot(1:7200, jqsim[[3]], type = 'l', xlab = "Time", ylab = "Expected queuing 
 n_missing <- 0 
 
 for (i in 1:100){
-  nqsim <- qsim(tmb=40)
+  nqsim <- qsim(tmb = 40)
   if (nqsim[[2]][7200] > 0 || nqsim[[1]][7200] > 0){
     n_missing <- n_missing + 1
   }
