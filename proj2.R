@@ -161,7 +161,7 @@ matplot(1:7200, jqsim[[3]], type = 'l', xlab = "time", ylab = "expected queuing 
 k <- 0 # k is the number of times there are cars missing the ferry after 100 times simulation
 for (i in 1:100){
   # If the final average queue lengths are above zero, that means there is at least one car missing the ferry departure
-  kqsim <- qsim()
+  kqsim <- qsim(tmb = 40)
   if (kqsim[[2]][7200] > 0 || kqsim[[1]][7200] > 0){
       k <- k + 1
   }
