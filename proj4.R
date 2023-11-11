@@ -1,17 +1,33 @@
+# "netup_" marks network list returned by function netup
+netup_nn <- netup(d)
 
+# nn: a network list as returned by netup
+# inp: a vector of input values for the first layer. 
+# forward should compute the remaining node values implied by inp, and return the
+# updated network list (as the only return object).
+forward <- function(nn, inp){
+  netup_h <- netup_nn$h
+  netup_W <- netup_nn$W
+  netup_b <- netup_nn$b
 
-
-
-
-
-
-
-
-
-
-
-
-
+  
+  
+  Wh <- mapply(crossprod, netup_W, netup_h, SIMPLIFY = FALSE)
+  Whb <- mapply('+', Wh, netup_b, SIMPLIFY = FALSE)
+  # The number of layers
+  netup_L <- length(netup_h)
+  for(l in 1:L){
+    Whb[l][which(Whb[l] < 0)] <- 0
+  }
+  
+  update_h <- c()
+  # inp is a vector containing first layer values
+  update_h[[1]] <- inp
+  update_h <- c(update_h, Whb[1:L-1])
+  
+  networklist <- list("h" = update_h, "W" = netup_W, "b" = netup_b)
+  return(networklist)
+}
 
 # Write a function backward(nn,k) for computing the derivatives of the loss 
 # corresponding to output class k for network nn (returned from forward). 
@@ -34,8 +50,10 @@ backward<-function(nn, k){
   f_h <- nn$h
   f_W <- nn$W
   f_b <- nn$b
-  # The number of nodes
-  L <- length(f_h)
+  
+  # The number of layers
+  f_L <- length(f_h)
+  
   # Define a function to calculate dlj by nodes for layer l
   # hl is a vector containing node values for layer l
   cal_dlj<- function(hl, k) {
@@ -62,11 +80,12 @@ backward<-function(nn, k){
   # "lapply" will make all sublists in f_W, weight matrices, transpose and return
   # a new list containing transposed matrices
   tW <- lapply(f_W, t)
-  adjusted_tW <- tW[1:L-1]
-  adjusted_d <- d[2:L]
+  
+  adjusted_tW <- tW[1:f_L-1]
+  adjusted_d <- d[2:f_L]
   # "mapply" use function crossprod() on each sublist in adjusted_tW and adjusted_d
   # equally, dh[i] = adjusted_tW[i] %*% adjusted_d[i] for all i
-  dh <- mapply(crossprod, adjusted_tW, adjusted_d)
+  dh <- mapply(crossprod, adjusted_tW, adjusted_d, SIMPLIFY = FALSE)
   
   db <- adjusted_d
   
