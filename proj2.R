@@ -57,7 +57,6 @@ qsim <- function(mf = 5, mb = 5, a.rate = .1, trb = 40, trf = 40, tmb = 30, tmf 
   
   # Here are some variables we will use later:
   # "f" is a matrix to store the processing time for cars in the French stations
-  # Notice: Choosing to use a data.frame to store the processing time to avoid messing up each station
   # Columns in "f" stand for each French station, namely "station_1", "station_2", ..., "station_mf"
   # The first row in "f" namely "qn" stores the number of cars waiting in the station
   # The second row in "f" namely "dt" stores the processing time for each car being processed
