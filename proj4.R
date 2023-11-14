@@ -6,12 +6,11 @@ netup_nn <- netup(d)
 # forward should compute the remaining node values implied by inp, and return the
 # updated network list (as the only return object).
 forward <- function(nn, inp){
+  
   netup_h <- netup_nn$h
   netup_W <- netup_nn$W
   netup_b <- netup_nn$b
 
-  
-  
   Wh <- mapply(crossprod, netup_W, netup_h, SIMPLIFY = FALSE)
   Whb <- mapply('+', Wh, netup_b, SIMPLIFY = FALSE)
   # The number of layers
@@ -104,3 +103,15 @@ backward<-function(nn, k){
 
 # "b_" marks the network list returned from backward function
 b_nn <- backward(f_nn, k)
+
+
+train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
+  
+  for (istep in nstep){
+    nn <- forward(nn, inp)
+    b_nn <- backward(nn, k)
+    nn$w <- b_nn$w - eta*b_nn$dw
+    nn$b <- b_nn$b - eta*b_nn$db
+  }
+}
+
