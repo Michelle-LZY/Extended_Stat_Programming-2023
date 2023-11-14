@@ -118,24 +118,34 @@ backward<-function(nn, k){
 
 ### ? mb return
 train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
+  mb
   
   for (istep in nstep){
     nn <- forward(nn, inp)
     b_nn <- backward(nn, k)
-    nn$w <- b_nn$w - eta*b_nn$dw
-    nn$b <- b_nn$b - eta*b_nn$db
+    nn$w <- mapply(function(x, y) x - eta*y, b_nn$w, b_nn$dw, SIMPLIFY = FALSE)
+    nn$b <- mapply(function(x, y) x - eta*y, b_nn$b, b_nn$db, SIMPLIFY = FALSE)
   }
   return (nn)
 }
 
-
-
 data(iris)
+
+class <- unique(iris[,"Species"])
+iris[,"Species"]<-as.numeric(iris[,"Species"])
+
 indices <- 1:nrow(iris)
 iris_test <- iris[indices %% 5 == 0,]
 iris_train <- iris[indices %% 5 != 0,]
 
-netup_nn <- netup(c(4,8,7,3))
+iris_nn <- netup(c(4,8,7,3))
+for (i in iris_train){
+  iris_nn <- train(iris_nn, inp = i[1:4], i[5])
+}
+for (i in iris_test){
+  i_nn <- forward(iris_nn, i[1:4])
+  
+}
 
 
 
