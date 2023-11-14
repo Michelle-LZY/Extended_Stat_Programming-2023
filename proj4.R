@@ -1,13 +1,29 @@
+# task 1
+# netup() is a function to return a list of vector containing:
+# h: a list of nodes for each layer where the length of each list is equal to the length of each layer
+# w: a list of weight matrices where the length of the list is the number of steps
+# and for each matrix, the dimension of the matrix is equal to the length of next layer multiply 
+# the length of current layer
+# b: a list of offset vectors where the length of the list is also the number of steps
+# and for each vector, the length of the vector is equal to the length of next layer
 netup <- function(d){
-  h <- list()
-  w <- list()
-  b <- list()
-  h[[1]] <- runif(d[1], 0, 1)
-  for (i in 1:(length(d)-1)){
-    w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
-    b[[i]] <- runif(d[i+1], 0, 0.2)
-    h[[i+1]] <- as.vector(w[[i]] %*% matrix(h[[i]],d[i],1) + matrix(b[[i]],d[i+1],1))
+  h <- list() # 'h' is a list to store the list of nodes for each layer
+  w <- list() # 'w' is a list to store the weight matrix for each layer
+  b <- list() # 'b' is a list to store the offset vector for each layer
+  
+  layer_size <- length(d) # number of layers
+  for (i in 1:layer_size){
+    # Initialize the value of nodes for each layer to 0
+    h[[i]] <- rep(0,d[i])
   }
+  for (i in 1:(layer_size-1)){
+    # Initialize the elements of 'w' and 'b' with U(0,0.2) random deviates
+    # Store the weight matrix linking the later i to layer i+1 to the i-th element of 'w'
+    w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
+    # Store the offset vector linking the later i to layer i+1 to the i-th element of 'w'
+    b[[i]] <- runif(d[i+1], 0, 0.2)
+  }
+  
   return(list(h=h,w=w,b=b))
 }
 #### "netup_" marks network list returned by function netup
@@ -129,20 +145,32 @@ train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
   return (nn)
 }
 
+# we use the dataset 'iris' from R to train a 4-8-7-3 network
 data(iris)
 
+# find the class for species in 'iris'
 class <- unique(iris[,"Species"])
+# let different speices represent in different number
 iris[,"Species"]<-as.numeric(iris[,"Species"])
 
+# 'indices' is the rows for 'iris'
 indices <- 1:nrow(iris)
+# select the test data consists of every 5 rows
 iris_test <- iris[indices %% 5 == 0,]
+# select the train data consists of iris which are not in test data
 iris_train <- iris[indices %% 5 != 0,]
 
 iris_nn <- netup(c(4,8,7,3))
+# look through each row in train data
 for (i in iris_train){
-  iris_nn <- train(iris_nn, inp = i[1:4], i[5])
+  # use train() to train the network 4-8-7-3
+  # given train data in the rows of matrix which is the first four elements for each row in train data
+  iris_nn <- train(iris_nn, i[1:4], i[5])
 }
+# look through each row in test data
 for (i in iris_test){
+  # use forward() to compute the remaining node values implied by the first four elements 
+  # for each row in test data and update the network list
   i_nn <- forward(iris_nn, i[1:4])
   
 }
