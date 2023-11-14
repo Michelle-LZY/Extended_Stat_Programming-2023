@@ -10,11 +10,13 @@ netup <- function(d){
   h <- list() # 'h' is a list to store the list of nodes for each layer
   w <- list() # 'w' is a list to store the weight matrix for each layer
   b <- list() # 'b' is a list to store the offset vector for each layer
-  for (i in 1:length(d)){
+  
+  layer_size <- length(d) # number of layers
+  for (i in 1:layer_size){
     # Initialize the value of nodes for each layer to 0
     h[[i]] <- rep(0,d[i])
   }
-  for (i in 1:(length(d)-1)){
+  for (i in 1:(layer_size-1)){
     # Initialize the elements of 'w' and 'b' with U(0,0.2) random deviates
     # Store the weight matrix linking the later i to layer i+1 to the i-th element of 'w'
     w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
