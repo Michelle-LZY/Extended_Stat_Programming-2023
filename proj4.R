@@ -1,5 +1,17 @@
-# "netup_" marks network list returned by function netup
-netup_nn <- netup(d)
+netup <- function(d){
+  h <- list()
+  w <- list()
+  b <- list()
+  h[[1]] <- runif(d[1], 0, 1)
+  for (i in 1:(length(d)-1)){
+    w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
+    b[[i]] <- runif(d[i+1], 0, 0.2)
+    h[[i+1]] <- as.vector(w[[i]] %*% matrix(h[[i]],d[i],1) + matrix(b[[i]],d[i+1],1))
+  }
+  return(list(h=h,w=w,b=b))
+}
+#### "netup_" marks network list returned by function netup
+#### netup_nn <- netup(d)
 
 # nn: a network list as returned by netup
 # inp: a vector of input values for the first layer. 
@@ -7,9 +19,9 @@ netup_nn <- netup(d)
 # updated network list (as the only return object).
 forward <- function(nn, inp){
   
-  netup_h <- netup_nn$h
-  netup_W <- netup_nn$W
-  netup_b <- netup_nn$b
+  netup_h <- nn$h
+  netup_W <- nn$W
+  netup_b <- nn$b
 
   Wh <- mapply(crossprod, netup_W, netup_h, SIMPLIFY = FALSE)
   Whb <- mapply('+', Wh, netup_b, SIMPLIFY = FALSE)
@@ -34,8 +46,8 @@ forward <- function(nn, inp){
 # to the network list as lists dh, dw, db. The updated list should be the return
 # object
 
-# "f_" marks h, W and b returned from forward function.
-f_nn <- forward(nn, inp)
+###### "f_" marks h, W and b returned from forward function.
+#####f_nn <- forward(nn, inp)
 
 # nn: network returned from forward function
 # k: an integer representing class
@@ -59,7 +71,7 @@ backward<-function(nn, k){
     # Calculate derivatives of the loss for ki w.r.t hlj: Dl[j]
     # "sapply" applies exp() to all nodes in hl and return a vector that the q-th
     # element in the vector is exp(hl[q]), then sum up all exp(hl[q])
-    sumq <- sum(sapply(hl, exp))
+    sumq <- sum(exp(hl))
     # Except for j=k, derivative of the loss of ki w.r.t hlj is 
     # exp(hl[j])/sum(exp(hl[q]))
     Dl = hl/sumq
@@ -101,10 +113,10 @@ backward<-function(nn, k){
   return (network)
 }
 
-# "b_" marks the network list returned from backward function
-b_nn <- backward(f_nn, k)
+###### "b_" marks the network list returned from backward function
+###### b_nn <- backward(f_nn, k)
 
-
+### ? mb return
 train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
   
   for (istep in nstep){
@@ -113,5 +125,18 @@ train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
     nn$w <- b_nn$w - eta*b_nn$dw
     nn$b <- b_nn$b - eta*b_nn$db
   }
+  return (nn)
 }
+
+
+
+data(iris)
+indices <- 1:nrow(iris)
+iris_test <- iris[indices %% 5 == 0,]
+iris_train <- iris[indices %% 5 != 0,]
+
+netup_nn <- netup(c(4,8,7,3))
+
+
+
 
