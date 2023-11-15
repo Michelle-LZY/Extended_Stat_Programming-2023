@@ -1,40 +1,60 @@
+# netup() is a function to return a list of vector containing:
+# h: a list of nodes for each layer. h[[l]] is a vector of length d[l] which 
+# contains the node values for layer l.
+# W: a list of weight matrices W[[l]] is the weight matrix linking layer l to 
+# layer l+1, so W[[l]] is a d[l+1]*d[l] matrix and the length of W list will be 
+# L-1 (L is the number of total layers). Initialize the elements with U(0, 0.2) 
+# random deviates.
+# b: a list of offset vectors. b[[l]] is the offset vector linking layer l to 
+# layer l+1, so the length of b[[l]] is equal to d[l+1] and there are L-1 vectors
+# in list b (L is the maximum layer). Initialize the elements with U(0, 0.2) 
+# random deviates.
 netup <- function(d){
-  h <- list()
-  w <- list()
+  # "lapply" applies function (length){return(rep(0,length))} to each element in
+  # d. For example, h[[i]] is a zero vector and length(h[[i]]) = d[i] 
+  h <- lapply(d, function(length) rep(0,length))
+  W <- list()
   b <- list()
-  h[[1]] <- runif(d[1], 0, 1)
-  for (i in 1:(length(d)-1)){
-    w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
+  L <- length(d) # The number of layers
+  
+  for (i in 1:(L-1)){
+    # Initialize the size of 'W' and W[[i]] is a d[i+1]*d[i] matrix
+    # Fill in the W matrices with uniformly distributed numbers within 0 and 0.2
+    W[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
+    # Same idea to initialize b
     b[[i]] <- runif(d[i+1], 0, 0.2)
-    h[[i+1]] <- as.vector(w[[i]] %*% matrix(h[[i]],d[i],1) + matrix(b[[i]],d[i+1],1))
   }
-  return(list(h=h,w=w,b=b))
+  
+  return(list("h"=h, "W"=W, "b"=b))
 }
-#### "netup_" marks network list returned by function netup
-#### netup_nn <- netup(d)
+
+
 
 # nn: a network list as returned by netup
 # inp: a vector of input values for the first layer. 
-# forward should compute the remaining node values implied by inp, and return the
-# updated network list (as the only return object).
+# This forward function should compute the remaining node values implied by inp, 
+# and return the updated network list (as the only return object).
 forward <- function(nn, inp){
-  
+  # "netup_" marks network list returned by function netup
   netup_h <- nn$h
   netup_W <- nn$W
   netup_b <- nn$b
-
-  Wh <- mapply(crossprod, netup_W, netup_h, SIMPLIFY = FALSE)
-  Whb <- mapply('+', Wh, netup_b, SIMPLIFY = FALSE)
-  # The number of layers
-  netup_L <- length(netup_h)
-  for(l in 1:L){
-    Whb[l][which(Whb[l] < 0)] <- 0
-  }
   
-  update_h <- c()
-  # inp is a vector containing first layer values
-  update_h[[1]] <- inp
-  update_h <- c(update_h, Whb[1:L-1])
+  update_h <- netup_h
+  update_h[[1]] <- inp # Fill in updated h^1 with inp
+  
+  netup_L <- length(netup_h) # The number of layers
+  
+  for(l in 1:(netup_L-1)){
+    # For layer l, Whb = W %*% h + b. Whb^l is a vector 
+    # with length(Whb^l) = length(h^l+1)
+    Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
+    # For h in layer l+1, h_j^(l+1) = max(Whb_j^l, 0)
+    # "sapply" applies function(x){return(pmax(0, x))} to each value in Whb^l and
+    # return a vector with positive values in Whb^l unchanged and change negative 
+    # values to zeros
+    update_h[[l+1]] <- sapply(Whb, function(x) pmax(0, x))
+  }
   
   networklist <- list("h" = update_h, "W" = netup_W, "b" = netup_b)
   return(networklist)
@@ -46,68 +66,59 @@ forward <- function(nn, inp){
 # to the network list as lists dh, dw, db. The updated list should be the return
 # object
 
-###### "f_" marks h, W and b returned from forward function.
-#####f_nn <- forward(nn, inp)
-
 # nn: network returned from forward function
 # k: an integer representing class
 backward<-function(nn, k){
-  # f_h: a list of nodes for each layer. f_h[[l]] is a vector of length d[l] 
-  # which contains the node values for layer l.
-  # f_W: a list of weight matrices. f_W[[l]] is the weight matrix linking layer l 
-  # to layer l+1.
-  # f_b: a list of offset vectors. b[[l]] is the offset vector linking layer l to 
-  # layer l+1.
-  f_h <- nn$h
-  f_W <- nn$W
-  f_b <- nn$b
+  # "f_" marks h, W and b returned from forward function.
+  # The length of lists h, W, b are the same as explained above for netup function
+  # and forward function
+  f_h <- nn$h # length: f_L
+  f_W <- nn$W # length: f_L - 1
+  f_L <- length(f_h) # The number of layers
   
-  # The number of layers
-  f_L <- length(f_h)
+  # First, calculate the derivative of the loss k w.r.t. nodes on the last layer
+  cal_derivative_L <- function(hL){
+    dh <- vector("list", f_L) ## length: f_L
+    sumq <- sum(exp(hL))      ## sum exp(h_q) for all q in the last layer
+    dh[[f_L]] <- hL/sumq
+    dh[[f_L]][k] <- hL[k]/sumq - 1
+    return(dh)
+  } 
+  dh <- cal_derivative_L(f_h[[f_L]])
   
-  # Define a function to calculate dlj by nodes for layer l
-  # hl is a vector containing node values for layer l
-  cal_dlj<- function(hl, k) {
-    # Calculate derivatives of the loss for ki w.r.t hlj: Dl[j]
-    # "sapply" applies exp() to all nodes in hl and return a vector that the q-th
-    # element in the vector is exp(hl[q]), then sum up all exp(hl[q])
-    sumq <- sum(exp(hl))
-    # Except for j=k, derivative of the loss of ki w.r.t hlj is 
-    # exp(hl[j])/sum(exp(hl[q]))
-    Dl = hl/sumq
-    # When j=k, derivative is equal to exp(hl[j])/(sum(exp(hl[q]))-1)
-    Dl[k] = hl[k]/(sumq-1)
-    # If hl[j] <= 0, dl[j] = 0; otherwise, dl[j] = Dl[j]
-    dl <- Dl
-    dl[which(hl < 0)] <- 0
-    return (dl)
-  }
-  # "lapply" will apply cal_dlj function to each sublist in f_h, the vectors hl 
-  # for each layer, and return a new list with sublists containing dl for each 
-  # layer.
-  d <- lapply(f_h, cal_dlj)
-  # Then, compute the derivatives of Li w.r.t all the other hl[j] by working
-  # backwards through layers applying the chain rule
-  # "lapply" will make all sublists in f_W, weight matrices, transpose and return
-  # a new list containing transposed matrices
-  tW <- lapply(f_W, t)
+  # Anytime we code up gradients we need to test them, by comparing the coded
+  # gradients with finite difference approximations
+  esp <- 1e-7 ## finite difference interval
+  dh_0 <- cal_derivative_L(c(f_h[[f_L]]+esp))
+  cat("Check derivatives at the last layer:", "\n", dh[[f_L]], "\n", dh_0[[f_L]])
   
-  adjusted_tW <- tW[1:f_L-1]
-  adjusted_d <- d[2:f_L]
-  # "mapply" use function crossprod() on each sublist in adjusted_tW and adjusted_d
-  # equally, dh[i] = adjusted_tW[i] %*% adjusted_d[i] for all i
-  dh <- mapply(crossprod, adjusted_tW, adjusted_d, SIMPLIFY = FALSE)
-  
-  db <- adjusted_d
-  
-  # "lapply" will make all sublists in adjusted_f_h, derivative of the loss, 
-  # transpose and return a new list containing transposed matrices
-  # "mapply" use function crossprod() on each sublist in adjusted_d and adjusted_tf_h
-  # equally, dW[i] = adjusted_d[i] %*% adjusted_tf_h[i] for all i
-  # Set "SIMPLIFY = FALSE" to make the function return a list
-  adjusted_tf_h <- lapply(f_h[1:L-1], t)
-  dW <- mapply(crossprod, adjusted_d, adjusted_tf_h, SIMPLIFY = FALSE)
+  # Second, compute derivatives of L w.r.t all other nodes by working backwards
+  # through the layers applying the chain rule (back-propagation)
+  db <- vector("list", f_L-1)   # length: f_L - 1
+  db_0 <- vector("list", f_L-1) # length: f_L - 1
+  dW <- vector("list", f_L-1)   # length: f_L - 1
+  dW_0 <- vector("list", f_L-1) # length: f_L - 1
+  for (l in (f_L-1):1){
+    # For layer l
+    d <- sapply(dh[[l+1]], function(x) pmax(0, x))
+    dh[[l]] <- t(f_W[[l]]) %*% d
+    db[[l]] <- d
+    dW[[l]] <- d %*% t(f_h[[l]])
     
+    # Again, finite difference check
+    d_0 <- sapply(dh[[l+1]]+esp, function(x) pmax(0, x))
+    dh_0[[l]] <- t(f_W[[l]]+esp) %*% d_0
+    db_0[[l]] <- d_0
+    dW_0[[l]] <- d_0 %*% t(f_h[[l]]+esp)
+  }
+  cat("Check derivatives:", "\n")
+  cat("dh and dh_0:", "\n")
+  dh; dh_0
+  cat("dW and dW_0:", "\n")
+  dW; dW_0
+  cat("db and db_0:", "\n")
+  db; db_0
+  
   # Update the network lists
   network = list("h" = f_h, "W" = f_W, "b" = f_b, "dh" = dh, "dW" = dW, "db" = db)
   return (network)
@@ -134,20 +145,32 @@ train <- function(nn, inps, k, eta = .01, mb = 10, nstep = 10000){
   return (nn)
 }
 
+# we use the dataset 'iris' from R to train a 4-8-7-3 network
 data(iris)
 
+# find the class for species in 'iris'
 class <- unique(iris[,"Species"])
+# let different speices represent in different number
 iris[,"Species"]<-as.numeric(iris[,"Species"])
 
+# 'indices' is the rows for 'iris'
 indices <- 1:nrow(iris)
+# select the test data consists of every 5 rows
 iris_test <- iris[indices %% 5 == 0,]
+# select the train data consists of iris which are not in test data
 iris_train <- iris[indices %% 5 != 0,]
 
 iris_nn <- netup(c(4,8,7,3))
+# look through each row in train data
 for (i in iris_train){
-  iris_nn <- train(iris_nn, inp = i[1:4], i[5])
+  # use train() to train the network 4-8-7-3
+  # given train data in the rows of matrix which is the first four elements for each row in train data
+  iris_nn <- train(iris_nn, i[1:4], i[5])
 }
+# look through each row in test data
 for (i in iris_test){
+  # use forward() to compute the remaining node values implied by the first four elements 
+  # for each row in test data and update the network list
   i_nn <- forward(iris_nn, i[1:4])
   
 }
