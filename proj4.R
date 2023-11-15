@@ -117,12 +117,17 @@ backward<-function(nn, k){
 ###### b_nn <- backward(f_nn, k)
 
 ### ? mb return
-train <-function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
-  mb
+train <- function(nn, inps, k, eta = .01, mb = 10, nstep = 10000){
+  
   
   for (istep in nstep){
-    nn <- forward(nn, inp)
-    b_nn <- backward(nn, k)
+    s <- sample(1, nrow(inps), mb)
+    for (i in s){
+      nn <- forward(nn, inps[i,])
+      b_nn[i] <- backward(nn, k[i])
+      
+    }
+    
     nn$w <- mapply(function(x, y) x - eta*y, b_nn$w, b_nn$dw, SIMPLIFY = FALSE)
     nn$b <- mapply(function(x, y) x - eta*y, b_nn$b, b_nn$db, SIMPLIFY = FALSE)
   }
