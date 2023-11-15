@@ -1,56 +1,61 @@
 # task 1
 # netup() is a function to return a list of vector containing:
-# h: a list of nodes for each layer where the length of each list is equal to the length of each layer
-# w: a list of weight matrices where the length of the list is the number of steps
-# and for each matrix, the dimension of the matrix is equal to the length of next layer multiply 
-# the length of current layer
-# b: a list of offset vectors where the length of the list is also the number of steps
-# and for each vector, the length of the vector is equal to the length of next layer
+# h: a list of nodes for each layer. h[[l]] is a vector of length d[l] which 
+# contains the node values for layer l.
+# W: a list of weight matrices W[[l]] is the weight matrix linking layer l to 
+# layer l+1, so W[[l]] is a d[l+1]*d[l] matrix and the length of W list will be 
+# L-1 (L is the number of total layers). Initialize the elements with U(0, 0.2) 
+# random deviates.
+# b: a list of offset vectors. b[[l]] is the offset vector linking layer l to 
+# layer l+1, so the length of b[[l]] is equal to d[l+1] and there are L-1 vectors
+# in list b (L is the maximum layer). Initialize the elements with U(0, 0.2) 
+# random deviates.
 netup <- function(d){
-  h <- list() # 'h' is a list to store the list of nodes for each layer
-  w <- list() # 'w' is a list to store the weight matrix for each layer
-  b <- list() # 'b' is a list to store the offset vector for each layer
+  # "lapply" applies function (length){return(rep(0,length))} to each element in
+  # d. For example, h[[i]] is a zero vector and length(h[[i]]) = d[i] 
+  h <- lapply(d, function(length) rep(0,length))
+  W <- list()
+  b <- list()
+  L <- length(d) # The number of layers
   
-  layer_size <- length(d) # number of layers
-  for (i in 1:layer_size){
-    # Initialize the value of nodes for each layer to 0
-    h[[i]] <- rep(0,d[i])
-  }
-  for (i in 1:(layer_size-1)){
-    # Initialize the elements of 'w' and 'b' with U(0,0.2) random deviates
-    # Store the weight matrix linking the later i to layer i+1 to the i-th element of 'w'
-    w[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
-    # Store the offset vector linking the later i to layer i+1 to the i-th element of 'w'
+  for (i in 1:(L-1)){
+    # Initialize the size of 'W' and W[[i]] is a d[i+1]*d[i] matrix
+    # Fill in the W matrices with uniformly distributed numbers within 0 and 0.2
+    W[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
+    # Same idea to initialize b
     b[[i]] <- runif(d[i+1], 0, 0.2)
   }
   
-  return(list(h=h,w=w,b=b))
+  return(list("h"=h, "W"=W, "b"=b))
 }
-#### "netup_" marks network list returned by function netup
-#### netup_nn <- netup(d)
+
+
 
 # nn: a network list as returned by netup
 # inp: a vector of input values for the first layer. 
-# forward should compute the remaining node values implied by inp, and return the
-# updated network list (as the only return object).
+# This forward function should compute the remaining node values implied by inp, 
+# and return the updated network list (as the only return object).
 forward <- function(nn, inp){
-  
+  # "netup_" marks network list returned by function netup
   netup_h <- nn$h
   netup_W <- nn$W
   netup_b <- nn$b
-
-  Wh <- mapply(crossprod, netup_W, netup_h, SIMPLIFY = FALSE)
-  Whb <- mapply('+', Wh, netup_b, SIMPLIFY = FALSE)
-  # The number of layers
-  netup_L <- length(netup_h)
-  for(l in 1:L){
-    Whb[l][which(Whb[l] < 0)] <- 0
-  }
   
-  update_h <- c()
-  # inp is a vector containing first layer values
-  update_h[[1]] <- inp
-  update_h <- c(update_h, Whb[1:L-1])
+  update_h <- netup_h
+  update_h[[1]] <- inp # Fill in updated h^1 with inp
+  
+  netup_L <- length(netup_h) # The number of layers
+  
+  for(l in 1:(netup_L-1)){
+    # For layer l, Whb = W %*% h + b. Whb^l is a vector 
+    # with length(Whb^l) = length(h^l+1)
+    Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
+    # For h in layer l+1, h_j^(l+1) = max(Whb_j^l, 0)
+    # "sapply" applies function(x){return(pmax(0, x))} to each value in Whb^l and
+    # return a vector with positive values in Whb^l unchanged and change negative 
+    # values to zeros
+    update_h[[l+1]] <- sapply(Whb, function(x) pmax(0, x))
+  }
   
   networklist <- list("h" = update_h, "W" = netup_W, "b" = netup_b)
   return(networklist)
@@ -62,24 +67,21 @@ forward <- function(nn, inp){
 # to the network list as lists dh, dw, db. The updated list should be the return
 # object
 
-###### "f_" marks h, W and b returned from forward function.
-#####f_nn <- forward(nn, inp)
+
 
 # nn: network returned from forward function
 # k: an integer representing class
 backward<-function(nn, k){
-  # f_h: a list of nodes for each layer. f_h[[l]] is a vector of length d[l] 
-  # which contains the node values for layer l.
-  # f_W: a list of weight matrices. f_W[[l]] is the weight matrix linking layer l 
-  # to layer l+1.
-  # f_b: a list of offset vectors. b[[l]] is the offset vector linking layer l to 
-  # layer l+1.
+  # "f_" marks h, W and b returned from forward function.
+  # The length of lists h, W, b are the same as explained above for netup function
+  # and forward function
   f_h <- nn$h
   f_W <- nn$W
   f_b <- nn$b
   
-  # The number of layers
-  f_L <- length(f_h)
+  f_L <- length(f_h) # The number of layers
+  
+  # First, calculate the derivative of the loss k_i w.r.t. nodes on layer L
   
   # Define a function to calculate dlj by nodes for layer l
   # hl is a vector containing node values for layer l
