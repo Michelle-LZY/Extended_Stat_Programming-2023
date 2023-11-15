@@ -1,4 +1,3 @@
-# task 1
 # netup() is a function to return a list of vector containing:
 # h: a list of nodes for each layer. h[[l]] is a vector of length d[l] which 
 # contains the node values for layer l.
@@ -75,57 +74,32 @@ backward<-function(nn, k){
   # "f_" marks h, W and b returned from forward function.
   # The length of lists h, W, b are the same as explained above for netup function
   # and forward function
-  f_h <- nn$h
-  f_W <- nn$W
-  f_b <- nn$b
-  
   f_L <- length(f_h) # The number of layers
   
-  # First, calculate the derivative of the loss k_i w.r.t. nodes on layer L
+  f_h <- nn$h # length: f_L
+  f_W <- nn$W # length: f_L - 1
+  f_b <- nn$b # length: f_L - 1
   
-  # Define a function to calculate dlj by nodes for layer l
-  # hl is a vector containing node values for layer l
-  cal_dlj<- function(hl, k) {
-    # Calculate derivatives of the loss for ki w.r.t hlj: Dl[j]
-    # "sapply" applies exp() to all nodes in hl and return a vector that the q-th
-    # element in the vector is exp(hl[q]), then sum up all exp(hl[q])
-    sumq <- sum(exp(hl))
-    # Except for j=k, derivative of the loss of ki w.r.t hlj is 
-    # exp(hl[j])/sum(exp(hl[q]))
-    Dl = hl/sumq
-    # When j=k, derivative is equal to exp(hl[j])/(sum(exp(hl[q]))-1)
-    Dl[k] = hl[k]/(sumq-1)
-    # If hl[j] <= 0, dl[j] = 0; otherwise, dl[j] = Dl[j]
-    dl <- Dl
-    dl[which(hl < 0)] <- 0
-    return (dl)
+  # Create empty lists dh, db, dW with sublists
+  dh <- vector("list", f_L)   # length: f_L
+  db <- vector("list", f_L-1) # length: f_L - 1
+  dW <- vector("list", f_L-1) # length: f_L - 1
+  
+  # First, calculate the derivative of the loss k w.r.t. nodes on the last layer
+  sumq <- sum(exp(f_h[[f_L]])) # sum exp(h_q) for all q in the last layer
+  dh[[f_L]] <- f_h[[f_L]]/sumq
+  dh[[f_L]][k] <- f_h[[f_L]][k]/sumq - 1
+  
+  # Second, compute derivatives of L w.r.t all other nodes by working backwards
+  # through the layers applying the chain rule (back-propagation)
+  for (l in (f_L-1):1){
+    # For layer l
+    d <- sapply(dh[[l+1]], function(x) pmax(0, x))
+    dh[[l]] <- t(f_W[[l]]) %*% d
+    db[[l]] <- d
+    dW[[l]] <- d %*% t(f_h[[l]])
   }
-  # "lapply" will apply cal_dlj function to each sublist in f_h, the vectors hl 
-  # for each layer, and return a new list with sublists containing dl for each 
-  # layer.
-  d <- lapply(f_h, cal_dlj)
-  # Then, compute the derivatives of Li w.r.t all the other hl[j] by working
-  # backwards through layers applying the chain rule
-  # "lapply" will make all sublists in f_W, weight matrices, transpose and return
-  # a new list containing transposed matrices
-  tW <- lapply(f_W, t)
   
-  adjusted_tW <- tW[1:f_L-1]
-  adjusted_d <- d[2:f_L]
-  # "mapply" use function crossprod() on each sublist in adjusted_tW and adjusted_d
-  # equally, dh[i] = adjusted_tW[i] %*% adjusted_d[i] for all i
-  dh <- mapply(crossprod, adjusted_tW, adjusted_d, SIMPLIFY = FALSE)
-  
-  db <- adjusted_d
-  
-  # "lapply" will make all sublists in adjusted_f_h, derivative of the loss, 
-  # transpose and return a new list containing transposed matrices
-  # "mapply" use function crossprod() on each sublist in adjusted_d and adjusted_tf_h
-  # equally, dW[i] = adjusted_d[i] %*% adjusted_tf_h[i] for all i
-  # Set "SIMPLIFY = FALSE" to make the function return a list
-  adjusted_tf_h <- lapply(f_h[1:L-1], t)
-  dW <- mapply(crossprod, adjusted_d, adjusted_tf_h, SIMPLIFY = FALSE)
-    
   # Update the network lists
   network = list("h" = f_h, "W" = f_W, "b" = f_b, "dh" = dh, "dW" = dW, "db" = db)
   return (network)
