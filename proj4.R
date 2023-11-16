@@ -52,10 +52,11 @@ forward <- function(nn, inp){
     # with length(Whb^l) = length(h^l+1)
     Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
     # For h in layer l+1, h_j^(l+1) = max(Whb_j^l, 0)
-    # "sapply" applies function(x){return(pmax(0, x))} to each value in Whb^l and
-    # return a vector with positive values in Whb^l unchanged and change negative 
-    # values to zeros
-    update_h[[l+1]] <- sapply(Whb, function(x) pmax(0, x))
+    for(i in 1:length(Whb)){
+      if(Whb[i] > 0){
+        update_h[[l+1]][i] <- Whb[i] 
+      }
+    }
   }
   
   networklist <- list("h" = update_h, "W" = netup_W, "b" = netup_b)
@@ -99,16 +100,16 @@ backward<-function(nn, k){
   
   # Anytime we code up gradients we need to test them, by comparing the coded
   # gradients with finite difference approximations
-  esp <- 1e-7 ## finite difference interval
-  dh_0 <- cal_derivative_L(c(f_h[[f_L]] + esp))
+  #esp <- 1e-7 ## finite difference interval
+  #dh_0 <- cal_derivative_L(c(f_h[[f_L]] + esp))
   # cat("Check derivatives at the last layer:", "\n", dh[[f_L]], "\n", dh_0[[f_L]])
   
   # Second, compute derivatives of L w.r.t all other nodes by working backwards
   # through the layers applying the chain rule (back-propagation)
   db <- vector("list", f_L - 1)   # length: f_L - 1
-  db_0 <- vector("list", f_L - 1) # length: f_L - 1
+  # db_0 <- vector("list", f_L - 1) # length: f_L - 1
   dW <- vector("list", f_L - 1)   # length: f_L - 1
-  dW_0 <- vector("list", f_L - 1) # length: f_L - 1
+  # dW_0 <- vector("list", f_L - 1) # length: f_L - 1
   for (l in (f_L-1):1){
     # For layer l
     # If h(l+1)[j] is positive, d[j] = dh(l+1)[j]
@@ -120,11 +121,11 @@ backward<-function(nn, k){
     dW[[l]] <- d %*% t(f_h[[l]])
     
     # Again, finite difference check
-    d_0 <- dh_0[[l+1]]
-    d_0[which(f_h[[l+1]] < 0)] <- 0
-    dh_0[[l]] <- t(f_W[[l]]+ esp)%*% d_0
-    db_0[[l]] <- d_0
-    dW_0[[l]] <- d_0 %*% t(f_h[[l]] + esp)
+    #d_0 <- dh_0[[l+1]]
+    #d_0[which(f_h[[l+1]] < 0)] <- 0
+    #dh_0[[l]] <- t(f_W[[l]]+ esp)%*% d_0
+    #db_0[[l]] <- d_0
+    #dW_0[[l]] <- d_0 %*% t(f_h[[l]] + esp)
   }
   #cat("Check derivatives:", "\n")
   #cat("dh and dh_0:", "\n")
@@ -229,7 +230,7 @@ for (i in 1:nrow(iris_test)){
   i_class <- which.max(i_nn$h[[length(layers)]])
   
   # !!!!!!!!!!
-  test_result <- append(test_result, i_class)
+  #test_result <- append(test_result, i_class)
   
   # if the predicted class is equal to the label, it is true
   # but if the result is different from the label, it means it is wrong
@@ -242,5 +243,5 @@ for (i in 1:nrow(iris_test)){
 end_time <- Sys.time()
 print(end_time - start_time)
 
-print(test_result)
+#print(test_result)
 print(misclassification/nrow(iris_test))
