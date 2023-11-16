@@ -41,14 +41,13 @@ netup <- function(d){
 # and return the updated network list (as the only return object).
 forward <- function(nn, inp){
   # "netup_" marks network list returned by function netup
-  netup_h <- nn$h
+  update_h <- nn$h
   netup_W <- nn$W
   netup_b <- nn$b
   
-  update_h <- netup_h
   update_h[[1]] <- inp # Fill in updated h^1 with inp
   
-  netup_L <- length(netup_h) # The number of layers
+  netup_L <- length(update_h) # The number of layers
   
   for(l in 1:(netup_L - 1)){
     # For layer l, Whb = W %*% h + b. Whb^l is a vector 
