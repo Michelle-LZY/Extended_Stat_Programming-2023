@@ -9,6 +9,8 @@
 # layer l+1, so the length of b[[l]] is equal to d[l+1] and there are L-1 vectors
 # in list b (L is the maximum layer). Initialize the elements with U(0, 0.2) 
 # random deviates.
+start_time <- Sys.time()
+
 netup <- function(d){
   # "lapply" applies function (length){return(rep(0,length))} to each element in
   # d. For example, h[[i]] is a zero vector and length(h[[i]]) = d[i] 
@@ -77,20 +79,23 @@ backward<-function(nn, k){
   f_b <- nn$b # length: f_L - 1
   f_L <- length(f_h) # The number of layers
   
-  # First, define a function to calculate dh
+  # Define function cal_derivative_L to calculate the derivative of the loss k 
+  # w.r.t. nodes on the last layer
   # hL is h^L, a vector of nodes in the last layer in h list: f_h[[L]]
   cal_derivative_L <- function(hL){
     # Create an empty list having f_L sublists
     dh <- vector("list", f_L)
+    # expj is a vector that expj[j] = exp(hL[j])
     expj <- exp(hL)
-    # Sum exp(h_q) for all q in the last layer
-    sumq <- sum(expj)    
-    dh[[f_L]] <- exp(hL)/sumq
-    dh[[f_L]][k] <- exp(hL[k])/sumq - 1
+    # Sum exp(hL[q]) for all q in hL
+    sumq <- sum(expj)
+    # dh_L[j] = exp(h_L)[j]/sum(h_L[q]), if j is not equal to k
+    dh[[f_L]] <- expj/sumq
+    # dh_L[k] = exp(h_L)[k]/sum(h_L[q])
+    dh[[f_L]][k] <- expj[k]/sumq - 1
     return(dh)
   } 
-  # Then, calculate the derivative of the loss k w.r.t. nodes on the last layer
-  dh[[f_L]] <- cal_derivative_L(f_h[[f_L]])
+  dh <- cal_derivative_L(f_h[[f_L]])
   
   # Anytime we code up gradients we need to test them, by comparing the coded
   # gradients with finite difference approximations
@@ -106,14 +111,18 @@ backward<-function(nn, k){
   dW_0 <- vector("list", f_L - 1) # length: f_L - 1
   for (l in (f_L-1):1){
     # For layer l
-    d <- sapply(dh[[l + 1]], function(x) pmax(0, x))
+    # If h(l+1)[j] is positive, d[j] = dh(l+1)[j]
+    d <- dh[[l+1]]
+    # If h(l+1)[j] is negative, d[j] = 0
+    d[which(f_h[[l+1]] < 0)] <- 0
     dh[[l]] <- t(f_W[[l]]) %*% d
     db[[l]] <- d
     dW[[l]] <- d %*% t(f_h[[l]])
     
     # Again, finite difference check
-    d_0 <- sapply(dh[[l + 1]] + esp, function(x) pmax(0, x))
-    dh_0[[l]] <- t(f_W[[l]] + esp) %*% d_0
+    d_0 <- dh_0[[l+1]]
+    d_0[which(f_h[[l+1]] < 0)] <- 0
+    dh_0[[l]] <- t(f_W[[l]]+ esp)%*% d_0
     db_0[[l]] <- d_0
     dW_0[[l]] <- d_0 %*% t(f_h[[l]] + esp)
   }
@@ -202,6 +211,9 @@ for (i in 1:nrow(iris_test)){
     misclassification <- misclassification + 1
   }
 }
+
+end_time <- Sys.time()
+end_time - start_time
 
 print(test_result)
 print(misclassification/nrow(iris_test))
