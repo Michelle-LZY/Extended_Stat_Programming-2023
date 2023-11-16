@@ -1,4 +1,39 @@
-# netup() is a function to return a list of vector containing:
+# Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
+# https://github.com/Michelle-LZY/Extended_Stat_Programming-2023.git
+# Xinran Zhu(s2508695) wrote netup() function.
+# Zheyue Lin(s2519324) coded forward() and backward() functions, also revised the 
+# comments.
+# Bo Gao(s2511232) worked on train() function and tested training data set.
+
+# Briefly Introduction of the project:
+# This project sets up a simple neural network for classification, and to train 
+# it using stochastic gradient descent.
+# There are different layers in the network and on each layer there are nodes. 
+# Nodes of the network each contain values h^l_j. 
+# The values for the first layer nodes are set to the values of input data: inp. 
+# The network then combines and transforms the values in each layer to produce 
+# the values at the next layer, until we reach the output layer L. We wrote a 
+# forward function to compute the remaining node values implied by inp. The output
+# layer nodes are used to predict output data (aka response data) associated with 
+# the input data. 
+# The network has parameters controlling the combinations and transformations 
+# linking each layer to the next.(matrix W) These parameters are adjusted in 
+# order to make the input data best predict the output data according to some loss
+# function, L. This is known as training the network. 
+# Stochastic Gradient Descent is an optimization approach that helps to maintain 
+# a good generalizing power, without getting too fixated on fitting any particular 
+# set of data. The idea is to repeatedly find the gradient of the loss function 
+# w.r.t. the parameters for small randomly chosen subsets of the training data, 
+# and to adjust the parameters by taking a step in the direction of the negative 
+# gradient.
+
+start_time <- Sys.time()
+
+# Set seed to make the results more stable
+set.seed(2)
+
+# netup() is the first function to use, a function to return a list of vector 
+# containing:
 # h: a list of nodes for each layer. h[[l]] is a vector of length d[l] which 
 # contains the node values for layer l.
 # W: a list of weight matrices W[[l]] is the weight matrix linking layer l to 
@@ -9,10 +44,6 @@
 # layer l+1, so the length of b[[l]] is equal to d[l+1] and there are L-1 vectors
 # in list b (L is the maximum layer). Initialize the elements with U(0, 0.2) 
 # random deviates.
-start_time <- Sys.time()
-
-# Set seed to make the results more stable
-set.seed(2)
 
 netup <- function(d){
   # "lapply" applies function (length){return(rep(0,length))} to each element in
