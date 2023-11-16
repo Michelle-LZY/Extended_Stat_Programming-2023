@@ -1,5 +1,5 @@
 # Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
-# https://github.com/Michelle-LZY/Extended_Stat_Programming-2023.git
+# https://github.com/Michelle-LZY/Extended_Stat_Programming-2023
 # Xinran Zhu(s2508695) wrote netup() function.
 # Zheyue Lin(s2519324) coded forward() and backward() functions, also revised the 
 # comments.
@@ -26,8 +26,6 @@
 # w.r.t. the parameters for small randomly chosen subsets of the training data, 
 # and to adjust the parameters by taking a step in the direction of the negative 
 # gradient.
-
-start_time <- Sys.time()
 
 # Set seed to make the results more stable
 set.seed(2)
@@ -243,9 +241,6 @@ for (i in 1:nrow(iris_test)){
     misclassification <- misclassification + 1
   }
 }
-
-end_time <- Sys.time()
-print(end_time - start_time)
 
 # Calculate the mis-classification rate (i.e. the proportion mis-classified) for 
 # the test set.
