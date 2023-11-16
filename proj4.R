@@ -25,7 +25,7 @@ netup <- function(d){
     b[[i]] <- runif(d[i+1], 0, 0.2)
   }
   
-  return(list("h"=h, "W"=W, "b"=b))
+  return(list("h" = h, "W" = W, "b" = b))
 }
 
 
@@ -45,7 +45,7 @@ forward <- function(nn, inp){
   
   netup_L <- length(netup_h) # The number of layers
   
-  for(l in 1:(netup_L-1)){
+  for(l in 1:(netup_L - 1)){
     # For layer l, Whb = W %*% h + b. Whb^l is a vector 
     # with length(Whb^l) = length(h^l+1)
     Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
@@ -95,29 +95,29 @@ backward<-function(nn, k){
   # Anytime we code up gradients we need to test them, by comparing the coded
   # gradients with finite difference approximations
   esp <- 1e-7 ## finite difference interval
-  dh_0 <- cal_derivative_L(c(f_h[[f_L]]+esp))
+  dh_0 <- cal_derivative_L(c(f_h[[f_L]] + esp))
   # cat("Check derivatives at the last layer:", "\n", dh[[f_L]], "\n", dh_0[[f_L]])
   
   # Second, compute derivatives of L w.r.t all other nodes by working backwards
   # through the layers applying the chain rule (back-propagation)
-  db <- vector("list", f_L-1)   # length: f_L - 1
-  db_0 <- vector("list", f_L-1) # length: f_L - 1
-  dW <- vector("list", f_L-1)   # length: f_L - 1
-  dW_0 <- vector("list", f_L-1) # length: f_L - 1
+  db <- vector("list", f_L - 1)   # length: f_L - 1
+  db_0 <- vector("list", f_L - 1) # length: f_L - 1
+  dW <- vector("list", f_L - 1)   # length: f_L - 1
+  dW_0 <- vector("list", f_L - 1) # length: f_L - 1
   for (l in (f_L-1):1){
     # For layer l
-    d <- sapply(dh[[l+1]], function(x) pmax(0, x))
+    d <- sapply(dh[[l + 1]], function(x) pmax(0, x))
     dh[[l]] <- t(f_W[[l]]) %*% d
     db[[l]] <- d
     dW[[l]] <- d %*% t(f_h[[l]])
     
     # Again, finite difference check
-    d_0 <- sapply(dh[[l+1]]+esp, function(x) pmax(0, x))
-    dh_0[[l]] <- t(f_W[[l]]+esp) %*% d_0
+    d_0 <- sapply(dh[[l + 1]] + esp, function(x) pmax(0, x))
+    dh_0[[l]] <- t(f_W[[l]] + esp) %*% d_0
     db_0[[l]] <- d_0
-    dW_0[[l]] <- d_0 %*% t(f_h[[l]]+esp)
+    dW_0[[l]] <- d_0 %*% t(f_h[[l]] + esp)
   }
-  cat("Check derivatives:", "\n")
+  #cat("Check derivatives:", "\n")
   #cat("dh and dh_0:", "\n")
   #dh; dh_0
   #cat("dW and dW_0:", "\n")
@@ -130,16 +130,23 @@ backward<-function(nn, k){
   return (network)
 }
 
-
+# nn: a network list as returned by netup
+# inp: a vector of input values for the first layer. 
+# k: an integer representing class
+# eta: a float representing step size
+# mb: an integer representing the number of data to randomly sample
+# nstep: an integer representing the the number of optimization steps
+# This train function ??????????? 
+# and return the updated network list (as the only return object).
 train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
-  
   for (istep in 1:nstep){
     s <- sample((1:nrow(inp)), mb)
+    
     sum_dW <- list()
     sum_db <- list()
     for (i in s){
-      nn <- forward(nn, unlist(unname(inp[i,])))
-      b_nn <- backward(nn, k[i])
+      f_nn <- forward(nn, as.numeric(inp[i,]))
+      b_nn <- backward(f_nn, k[i])
       b_nn_dW <- b_nn$dW
       b_nn_db <- b_nn$db
       if(length(sum_db) == 0){
@@ -153,8 +160,8 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
         }
       }
     }
-    nn$W <- mapply(function(x, y) x - eta*y/mb, nn$W, sum_dW, SIMPLIFY = FALSE)
-    nn$b <- mapply(function(x, y) x - eta*y/mb, nn$b, sum_db, SIMPLIFY = FALSE)
+    nn$W <- mapply(function(x, y) x - eta*(y/mb), nn$W, sum_dW, SIMPLIFY = FALSE)
+    nn$b <- mapply(function(x, y) x - eta*(y/mb), nn$b, sum_db, SIMPLIFY = FALSE)
   }
   return (nn)
 }
@@ -174,29 +181,27 @@ iris_test <- iris[indices %% 5 == 0,]
 # select the train data consists of iris which are not in test data
 iris_train <- iris[indices %% 5 != 0,]
 
+# set the network structures and initialize it
 layers <- c(4,8,7,3)
 iris_nn <- netup(layers)
-iris_nn <- train(iris_nn, iris_train[,1:4], iris_train[,5])
 
+# train the network based on train dataset
+iris_nn <- train(iris_nn, iris_train[, 1:4], iris_train[, 5])
 
+# 
 test_result <- list()
 misclassification <- 0
 # look through each row in test data
 for (i in 1:nrow(iris_test)){
   # use forward() to compute the remaining node values implied by the first four elements 
   # for each row in test data and update the network list
-
-  i_nn <- forward(iris_nn, unlist(unname(iris_test[i,1:4])))
+  i_nn <- forward(iris_nn, as.numeric(iris_test[i, 1:4]))
   i_class <- which.max(i_nn$h[[length(layers)]])
   test_result <- append(test_result, i_class)
-  if (i_class != iris_test[i,5]){
+  if (i_class != iris_test[i, 5]){
     misclassification <- misclassification + 1
   }
 }
 
 print(test_result)
 print(misclassification/nrow(iris_test))
-
-
-
-
