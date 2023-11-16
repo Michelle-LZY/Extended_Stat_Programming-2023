@@ -77,15 +77,18 @@ backward<-function(nn, k){
   f_b <- nn$b # length: f_L - 1
   f_L <- length(f_h) # The number of layers
   
-  # First, calculate the derivative of the loss k w.r.t. nodes on the last layer
+  # First, define a function to calculate dh
+  # hL is h^l, a vector of nodes in layer l in h list
   cal_derivative_L <- function(hL){
-    dh <- vector("list", f_L) ## length: f_L
+    # Create an empty list having f_L sublists
+    dh <- vector("list", f_L) 
     sumq <- sum(exp(hL))      ## sum exp(h_q) for all q in the last layer
-    dh[[f_L]] <- hL/sumq
-    dh[[f_L]][k] <- hL[k]/sumq - 1
+    dh[[f_L]] <- exp(hL)/sumq
+    dh[[f_L]][k] <- exp(hL[k])/sumq - 1
     return(dh)
   } 
-  dh <- cal_derivative_L(f_h[[f_L]])
+  # Then, calculate the derivative of the loss k w.r.t. nodes on the last layer
+  dh[[f_L]] <- cal_derivative_L(f_h[[f_L]])
   
   # Anytime we code up gradients we need to test them, by comparing the coded
   # gradients with finite difference approximations
