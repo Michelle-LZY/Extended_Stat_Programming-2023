@@ -78,11 +78,13 @@ backward<-function(nn, k){
   f_L <- length(f_h) # The number of layers
   
   # First, define a function to calculate dh
-  # hL is h^l, a vector of nodes in layer l in h list
+  # hL is h^L, a vector of nodes in the last layer in h list: f_h[[L]]
   cal_derivative_L <- function(hL){
     # Create an empty list having f_L sublists
-    dh <- vector("list", f_L) 
-    sumq <- sum(exp(hL))      ## sum exp(h_q) for all q in the last layer
+    dh <- vector("list", f_L)
+    expj <- exp(hL)
+    # Sum exp(h_q) for all q in the last layer
+    sumq <- sum(expj)    
     dh[[f_L]] <- exp(hL)/sumq
     dh[[f_L]][k] <- exp(hL[k])/sumq - 1
     return(dh)
