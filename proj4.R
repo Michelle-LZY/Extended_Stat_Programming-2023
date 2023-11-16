@@ -11,6 +11,9 @@
 # random deviates.
 start_time <- Sys.time()
 
+# Set seed to make the results more stable
+set.seed(2)
+
 netup <- function(d){
   # "lapply" applies function (length){return(rep(0,length))} to each element in
   # d. For example, h[[i]] is a zero vector and length(h[[i]]) = d[i] 
@@ -98,18 +101,10 @@ backward<-function(nn, k){
   } 
   dh <- cal_derivative_L(f_h[[f_L]])
   
-  # Anytime we code up gradients we need to test them, by comparing the coded
-  # gradients with finite difference approximations
-  #esp <- 1e-7 ## finite difference interval
-  #dh_0 <- cal_derivative_L(c(f_h[[f_L]] + esp))
-  # cat("Check derivatives at the last layer:", "\n", dh[[f_L]], "\n", dh_0[[f_L]])
-  
   # Second, compute derivatives of L w.r.t all other nodes by working backwards
   # through the layers applying the chain rule (back-propagation)
   db <- vector("list", f_L - 1)   # length: f_L - 1
-  # db_0 <- vector("list", f_L - 1) # length: f_L - 1
   dW <- vector("list", f_L - 1)   # length: f_L - 1
-  # dW_0 <- vector("list", f_L - 1) # length: f_L - 1
   for (l in (f_L-1):1){
     # For layer l
     # If h(l+1)[j] is positive, d[j] = dh(l+1)[j]
@@ -119,21 +114,7 @@ backward<-function(nn, k){
     dh[[l]] <- t(f_W[[l]]) %*% d
     db[[l]] <- d
     dW[[l]] <- d %*% t(f_h[[l]])
-    
-    # Again, finite difference check
-    #d_0 <- dh_0[[l+1]]
-    #d_0[which(f_h[[l+1]] < 0)] <- 0
-    #dh_0[[l]] <- t(f_W[[l]]+ esp)%*% d_0
-    #db_0[[l]] <- d_0
-    #dW_0[[l]] <- d_0 %*% t(f_h[[l]] + esp)
   }
-  #cat("Check derivatives:", "\n")
-  #cat("dh and dh_0:", "\n")
-  #dh; dh_0
-  #cat("dW and dW_0:", "\n")
-  #dW; dW_0
-  #cat("db and db_0:", "\n")
-  #db; db_0
   
   # Update the network lists
   network = list("h" = f_h, "W" = f_W, "b" = f_b, "dh" = dh, "dW" = dW, "db" = db)
@@ -216,9 +197,6 @@ iris_nn <- netup(layers)
 # train the network based on train dataset
 iris_nn <- train(iris_nn, iris_train[, 1:4], iris_train[, 5])
 
-#!!!!!
-test_result<-list()
-
 # define misclassification to store the number of misclassification
 misclassification <- 0
 # look through each row in test data
@@ -228,9 +206,6 @@ for (i in 1:nrow(iris_test)){
   i_nn <- forward(iris_nn, as.numeric(iris_test[i, 1:4]))
   # find the maximum in the last layers, which is the predicted class
   i_class <- which.max(i_nn$h[[length(layers)]])
-  
-  # !!!!!!!!!!
-  #test_result <- append(test_result, i_class)
   
   # if the predicted class is equal to the label, it is true
   # but if the result is different from the label, it means it is wrong
@@ -243,5 +218,7 @@ for (i in 1:nrow(iris_test)){
 end_time <- Sys.time()
 print(end_time - start_time)
 
-#print(test_result)
-print(misclassification/nrow(iris_test))
+# Calculate the misclassification rate (i.e. the proportion misclassified) for the
+# test set.
+misclassification_rate <- misclassification/nrow(iris_test)
+print(misclassification_rate)
