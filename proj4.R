@@ -145,25 +145,35 @@ backward<-function(nn, k){
 # eta: a float representing step size
 # mb: an integer representing the number of data to randomly sample
 # nstep: an integer representing the the number of optimization steps
-# This train function ??????????? 
+# This train function is used to find the optimal value of W and b 
+# to get the best result for the current tasks
 # and return the updated network list (as the only return object).
 train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
   # loops nstep times toupdate W and b
   for (istep in 1:nstep){
     # randomly choose mb rows from inp
     s <- sample((1:nrow(inp)), mb)
-    # define sum
+    # define sum_dW and sum_db to store the sum of dW and db
     sum_dW <- list()
     sum_db <- list()
+    # loops to deal with all chosen rows
     for (i in s){
+      # use forward function to update h nodes 
       f_nn <- forward(nn, as.numeric(inp[i,]))
+      # use backward function to get dW and db for updating W and b
       b_nn <- backward(f_nn, k[i])
+      
+      # define b_nn_dW and b_nn_db to store the new dW and db
       b_nn_dW <- b_nn$dW
       b_nn_db <- b_nn$db
+      # if sum_dW and sum_db is empty, 
+      # set sum_dW equal to b_nn_dW and sum_db equal to b_nn_db
       if(length(sum_db) == 0){
         sum_dW <- b_nn_dW
         sum_db <- b_nn_db
       }
+      # if sum_dW and sum_db is not empty, 
+      # add b_nn_dW to sum_dW and add b_nn_db to sum_db 
       else {
         for (j in 1:length(b_nn_db)){
           sum_dW[[j]] <- sum_dW[[j]] + b_nn_dW[[j]]
@@ -171,9 +181,15 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
         }
       }
     }
+    
+    # update the new W equal to the old W minus eta*sum_dW/mb 
+    # and new b equal to the old b minus eta*sum_dw/mb
+    # because the average value of dW is equal to sum_dW/mb
+    # and the average value of db is equal to sum_db/mb
     nn$W <- mapply(function(x, y) x - eta*(y/mb), nn$W, sum_dW, SIMPLIFY = FALSE)
     nn$b <- mapply(function(x, y) x - eta*(y/mb), nn$b, sum_db, SIMPLIFY = FALSE)
   }
+  
   return (nn)
 }
 
@@ -224,7 +240,7 @@ for (i in 1:nrow(iris_test)){
 }
 
 end_time <- Sys.time()
-end_time - start_time
+print(end_time - start_time)
 
 print(test_result)
 print(misclassification/nrow(iris_test))
