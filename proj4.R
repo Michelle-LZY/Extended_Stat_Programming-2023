@@ -137,9 +137,11 @@ backward<-function(nn, k){
 # This train function ??????????? 
 # and return the updated network list (as the only return object).
 train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
+  # loops nstep times toupdate W and b
   for (istep in 1:nstep){
+    # randomly choose mb rows from inp
     s <- sample((1:nrow(inp)), mb)
-    
+    # define sum
     sum_dW <- list()
     sum_db <- list()
     for (i in s){
@@ -186,16 +188,25 @@ iris_nn <- netup(layers)
 # train the network based on train dataset
 iris_nn <- train(iris_nn, iris_train[, 1:4], iris_train[, 5])
 
-# 
-test_result <- list()
+#!!!!!
+test_result<-list()
+
+# define misclassification to store the number of misclassification
 misclassification <- 0
 # look through each row in test data
 for (i in 1:nrow(iris_test)){
-  # use forward() to compute the remaining node values implied by the first four elements 
+  # compute the remaining node values implied by the first four elements 
   # for each row in test data and update the network list
   i_nn <- forward(iris_nn, as.numeric(iris_test[i, 1:4]))
+  # find the maximum in the last layers, which is the predicted class
   i_class <- which.max(i_nn$h[[length(layers)]])
+  
+  # !!!!!!!!!!
   test_result <- append(test_result, i_class)
+  
+  # if the predicted class is equal to the label, it is true
+  # but if the result is different from the label, it means it is wrong
+  # so the number of misclassification should be plus 1
   if (i_class != iris_test[i, 5]){
     misclassification <- misclassification + 1
   }
