@@ -4,7 +4,6 @@ Zheyue: forward and backward function
 Bo: train function, train the network by training data and test the model  
 
 # Practice 2 - Due on 20th Oct
-![91769fffd5413849932d0b61dc978b7](https://github.com/Michelle-LZY/Extended_Stat_Programming-2023/assets/136700489/3b6c5640-4e53-4ef6-b6db-398dab343a03)
 
 # Practice 1 - Due on 6th Oct
 <details>
