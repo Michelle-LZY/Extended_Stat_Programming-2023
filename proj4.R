@@ -207,9 +207,9 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
 data(iris)
 
 # Find the species in 'iris'
-class <- unique(iris[,"Species"])
+class <- unique(iris[, "Species"])
 # Use 1,2,3 to represent setosa, versicolor and virginica
-iris[,"Species"] <- as.numeric(iris[,"Species"])
+iris[,"Species"] <- as.numeric(iris[, "Species"])
 
 # Get row index for 'iris'
 indices <- 1:nrow(iris)
