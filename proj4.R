@@ -27,6 +27,8 @@
 # and to adjust the parameters by taking a step in the direction of the negative 
 # gradient.
 
+start<-Sys.time()
+
 # Set seed to make the results more stable
 set.seed(2)
 
@@ -91,11 +93,8 @@ forward <- function(nn, inp){
     # with length(Whb^l) = length(h^(l+1))
     Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
     # For h in layer l+1, h_j = max(Whb_j, 0)
-    for(i in 1:length(Whb)){
-      if(Whb[i] > 0){
-        update_h[[l+1]][i] <- Whb[i] 
-      }
-    }
+    update_h[[l+1]] <- Whb
+    update_h[[l+1]][Whb<0] <- 0
   }
   
   # Return updated network list
@@ -119,18 +118,15 @@ backward<-function(nn, k){
   f_b <- nn$b ## length: f_L - 1
   f_L <- length(f_h) ## The number of layers
   
-  # Calculate the derivative of the loss k w.r.t. nodes on the last layer L 
+   
   # Create an empty list having L sublists
   dh <- vector("list", f_L)
-  # expj is a vector that expj[j] = exp(hL[j]), where f_h[[f_L]] = hL, the nodes 
-  # vector on the last layer L
-  expj <- exp(f_h[[f_L]])
-  # Sum exp(hL[q]) for all q in hL
-  sumq <- sum(expj)
-  # dh_L[j] = exp(h_L)[j]/sum(h_L[q]), if j is not equal to k
-  dh[[f_L]] <- expj/sumq
-  # dh_L[k] = exp(h_L)[k]/sum(h_L[q])
-  dh[[f_L]][k] <- expj[k]/sumq - 1
+  # Calculate the derivative of the loss k w.r.t. nodes on the last layer L
+  # dh = exp(hL[j])/sum(hL[q]), where f_h[[f_L]] = hL and sum all q in layer L 
+  # Except for j= k, dh = exp(hL[j])/sum(hL[q]) - 1
+  expj_sumq <- exp(f_h[[f_L]])/sum(exp(f_h[[f_L]]))
+  dh[[f_L]] <- expj_sumq
+  dh[[f_L]][k] <- expj_sumq[k] - 1
 
   # Compute derivatives of L w.r.t all other nodes by working backwards through 
   # the layers applying the chain rule (back-propagation)
@@ -245,4 +241,7 @@ for (i in 1:nrow(iris_test)){
 # Calculate the mis-classification rate (i.e. the proportion mis-classified) for 
 # the test set.
 misclassification_rate <- misclassification/nrow(iris_test)
-cat("mis-classification rate: ", misclassification_rate)
+print(paste("mis-classification rate: ", misclassification_rate))
+
+end <- Sys.time()
+print(paste("Time consumed: ", end - start))
