@@ -1,7 +1,8 @@
 # Group members: Bo Gao(s2511232), Zheyue Lin(s2519324) and Xinran Zhu(s2508695)
 # https://github.com/Michelle-LZY/Extended_Stat_Programming-2023
 # Xinran Zhu(s2508695) wrote netup() function.
-# Zheyue Lin(s2519324) coded forward() and backward() functions.
+# Zheyue Lin(s2519324) coded forward() and backward() functions, also revised the 
+# comments.
 # Bo Gao(s2511232) worked on train() function and tested training data set.
 
 # Briefly Introduction of the project:
@@ -26,6 +27,8 @@
 # and to adjust the parameters by taking a step in the direction of the negative 
 # gradient.
 
+start<-Sys.time()
+
 # Set seed to make the results more stable
 set.seed(2)
 
@@ -44,24 +47,25 @@ set.seed(2)
 netup <- function(d){
   # "lapply" applies function (length){return(rep(0,length))} to each element in
   # d. For example, h[[i]] is a zero vector and length(h[[i]]) = d[i] 
-  h <- lapply(d, function(length) rep(0, length))
+  h <- lapply(d, function(length) rep(0,length))
   W <- list()
   b <- list()
   # The number of layers
   L <- length(d)
   
   # There are only L-1 W matrices and L-1 b vectors
-  for (i in 1:(L - 1)){
+  for (i in 1:(L-1)){
     # Initialize the size of 'W' and W[[i]] is a d[i+1]*d[i] matrix
     # Fill in the W matrices with uniformly distributed numbers within 0 and 0.2
-    W[[i]] <- matrix(runif(d[i] * d[i + 1], 0, 0.2), d[i + 1], d[i])
+    W[[i]] <- matrix(runif(d[i] * d[i+1], 0, 0.2), d[i+1], d[i])
     # Same idea to initialize b
-    b[[i]] <- runif(d[i + 1], 0, 0.2)
+    b[[i]] <- runif(d[i+1], 0, 0.2)
   }
   
   # Return initialized network list
   return(list("h" = h, "W" = W, "b" = b))
 }
+
 
 
 # forward() is the second function to use, compute the remaining node values 
@@ -74,6 +78,7 @@ forward <- function(nn, inp){
   update_h <- nn$h
   netup_W <- nn$W
   netup_b <- nn$b
+  
   # Fill in updated h^1 with inp
   update_h[[1]] <- inp 
   
@@ -88,14 +93,15 @@ forward <- function(nn, inp){
     # with length(Whb^l) = length(h^(l+1))
     Whb <- netup_W[[l]] %*% update_h[[l]] + netup_b[[l]]
     # For h in layer l+1, h_j = max(Whb_j, 0)
-    update_h[[l + 1]] <- Whb
-    update_h[[l + 1]][Whb < 0] <- 0
+    update_h[[l+1]] <- Whb
+    update_h[[l+1]][Whb<0] <- 0
   }
   
   # Return updated network list
   networklist <- list("h" = update_h, "W" = netup_W, "b" = netup_b)
   return(networklist)
 }
+
 
 
 # Write a function backward(nn,k) for computing the derivatives of the loss 
@@ -112,36 +118,38 @@ backward<-function(nn, k){
   f_b <- nn$b ## length: f_L - 1
   f_L <- length(f_h) ## The number of layers
   
+   
   # Create an empty list having L sublists
   dh <- vector("list", f_L)
   # Calculate the derivative of the loss k w.r.t. nodes on the last layer L
   # dh = exp(hL[j])/sum(hL[q]), where f_h[[f_L]] = hL and sum all q in layer L 
   # Except for j= k, dh = exp(hL[j])/sum(hL[q]) - 1
-  exphL <- exp(f_h[[f_L]])
-  expj_sumq <- exphL/sum(exphL)
+  expj_sumq <- exp(f_h[[f_L]])/sum(exp(f_h[[f_L]]))
   dh[[f_L]] <- expj_sumq
   dh[[f_L]][k] <- expj_sumq[k] - 1
-  
+
   # Compute derivatives of L w.r.t all other nodes by working backwards through 
   # the layers applying the chain rule (back-propagation)
   db <- vector("list", f_L - 1) ## length: f_L - 1
   dW <- vector("list", f_L - 1) ## length: f_L - 1
   
   # Calculate derivatives backwards
-  for (l in (f_L - 1):1){
+  for (l in (f_L-1):1){
     # For layer l
     # If h(l+1)[j] is positive, d[j] = dh(l+1)[j]
+    d <- dh[[l+1]]
     # If h(l+1)[j] is negative, d[j] = 0
-    d <- dh[[l + 1]]*(f_h[[l + 1]] > 0)
-    dh[[l]] <- t(f_W[[l]]) %*% d ## dh = W^T %*% d
-    db[[l]] <- d                 ## db = d
-    dW[[l]] <- d %*% t(f_h[[l]]) ## dW = d %*% h^T
+    d[which(f_h[[l+1]] < 0)] <- 0
+    dh[[l]] <- t(f_W[[l]]) %*% d
+    db[[l]] <- d
+    dW[[l]] <- d %*% t(f_h[[l]])
   }
   
   # Update the network lists
   network = list("h" = f_h, "W" = f_W, "b" = f_b, "dh" = dh, "dW" = dW, "db" = db)
   return (network)
 }
+
 
 
 # train function combined forward and backward functions to find the optimal 
@@ -165,11 +173,11 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
     # Create empty lists sum_dW and sum_db to store the sum of derivatives dW, db
     # There are L-1 sublists in sum_dW and sum_db
     # Giving zeros to empty sublists
-    sum_dW <- as.list(rep(0, L - 1))
-    sum_db <- as.list(rep(0, L - 1))
+    sum_dW <- sapply(vector("list", L-1), function(x) list(0))
+    sum_db <- sapply(vector("list", L-1), function(x) list(0))
     
     # Iterative the randomly chose first layer inputs to get the different dW 
-    # and db values, and then sum them up
+    # and db values, sum them up, then get the average values of dW and db
     for (i in s){
       # Use forward function to update all nodes in h list
       f_nn <- forward(nn, as.numeric(inp[i,]))
@@ -179,19 +187,17 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
       # b_nn_dW and b_nn_db are used to store updated dW and db
       b_nn_dW <- b_nn$dW
       b_nn_db <- b_nn$db
+      
       for (j in 1:length(b_nn_db)){
-        sum_dW[[j]] <- sum_dW[[j]] + b_nn_dW[[j]] ## Add b_nn_dW to sum_dW
-        sum_db[[j]] <- sum_db[[j]] + b_nn_db[[j]] ## Add b_nn_db to sum_db 
+        sum_dW[[j]] <- sum_dW[[j]] + b_nn_dW[[j]]
+        sum_db[[j]] <- sum_db[[j]] + b_nn_db[[j]]
       }
     }
     
-    # Get the average values of dW and db
     # new W = old W - eta*sum_dW/mb, where sum_dW/mb is the average value of dW
     # new b = old b - eta*sum_dw/mb, where sum_db/mb is the average value of db
-    for (j in 1:(L - 1)){
-      nn$W[[j]] <- nn$W[[j]] - sum_dW[[j]]*eta/mb
-      nn$b[[j]] <- nn$b[[j]] - sum_db[[j]]*eta/mb
-    }
+    nn$W <- mapply(function(x, y) x - eta*(y/mb), nn$W, sum_dW, SIMPLIFY = FALSE)
+    nn$b <- mapply(function(x, y) x - eta*(y/mb), nn$b, sum_db, SIMPLIFY = FALSE)
   }
   
   return (nn)
@@ -199,12 +205,10 @@ train <- function(nn, inp, k, eta = .01, mb = 10, nstep = 10000){
 
 # Use the dataset 'iris' from R to train a 4-8-7-3 network
 data(iris)
-
 # Find the species in 'iris'
-class <- unique(iris[, "Species"])
+class <- unique(iris[,"Species"])
 # Use 1,2,3 to represent setosa, versicolor and virginica
-iris[,"Species"] <- as.numeric(iris[, "Species"])
-
+iris[,"Species"] <- as.numeric(iris[,"Species"])
 # Get row index for 'iris'
 indices <- 1:nrow(iris)
 # Select the test data by every 5 rows
@@ -213,7 +217,7 @@ iris_test <- iris[indices %% 5 == 0,]
 iris_train <- iris[indices %% 5 != 0,]
 
 # Set the network structure and initialize it by netup function
-layers <- c(4, 8, 7, 3)
+layers <- c(4,8,7,3)
 iris_nn <- netup(layers)
 
 # Train the network based on training dataset
@@ -238,3 +242,6 @@ for (i in 1:nrow(iris_test)){
 # the test set.
 misclassification_rate <- misclassification/nrow(iris_test)
 print(paste("mis-classification rate: ", misclassification_rate))
+
+end <- Sys.time()
+print(paste("Time consumed: ", end - start))
